@@ -1,43 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="bumblebee" class="scroll-smooth scroll-pt-8 motion-reduce:scroll-auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
-    <.live_title default="WaziRoute" suffix=" · Phoenix Framework" phx-no-format>{assigns[:page_title]}</.live_title>
+    <.live_title default="Wazi Route — Your kind of route" phx-no-format>{assigns[:page_title]}</.live_title>
+    <meta
+      name="description"
+      content="Meet Wazi Route, a vehicle-aware route planner being built for Kenyan roads. Compare road conditions, hill traffic, and your driving preferences. Nairobi pilot coming soon."
+    />
+    <meta name="theme-color" content="#16445a" />
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
+    <%!-- Keep the install manifest at a stable URL rather than an asset-digested path. --%>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" sizes="180x180" href={~p"/images/logos/apple-touch-icon.png"} />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Wazi Route" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
-    <script>
-      (() => {
-        const systemTheme = () => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-
-        const setTheme = (theme) => {
-          if (theme === "system") {
-            localStorage.removeItem("phx:theme");
-            document.documentElement.setAttribute("data-theme", systemTheme());
-            document.documentElement.setAttribute("data-theme-source", "system");
-          } else {
-            localStorage.setItem("phx:theme", theme);
-            document.documentElement.setAttribute("data-theme", theme);
-            document.documentElement.setAttribute("data-theme-source", "user");
-          }
-        };
-        if (!document.documentElement.hasAttribute("data-theme")) {
-          setTheme(localStorage.getItem("phx:theme") || "system");
-        }
-        window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
-
-        matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-          if (document.documentElement.getAttribute("data-theme-source") === "system") {
-            document.documentElement.setAttribute("data-theme", systemTheme());
-          }
-        });
-      })();
-    </script>
   </head>
-  <body>
+  <body class="min-h-dvh bg-base-200 p-3 font-sans text-base-content antialiased selection:bg-accent selection:text-accent-content sm:p-5 lg:p-8 has-[#launch-dialog[open]]:overflow-hidden [&_[data-phx-session]]:contents [&_[data-phx-teleported-src]]:contents [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-4 [&_:focus-visible]:outline-primary">
     {@inner_content}
   </body>
 </html>

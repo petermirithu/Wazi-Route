@@ -23,6 +23,13 @@ defmodule WaziRouteWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :wazi_route,
+    only: ~w(manifest.json sw.js offline.html),
+    cache_control_for_etags: "no-cache",
+    cache_control_for_vsn_requests: "no-cache"
+
+  plug Plug.Static,
+    at: "/",
+    from: :wazi_route,
     gzip: not code_reloading?,
     only: WaziRouteWeb.static_paths(),
     raise_on_missing_only: code_reloading?
