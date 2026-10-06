@@ -16,7 +16,7 @@ import Config
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
-if System.get_env("PHX_SERVER") do
+if System.get_env("PHX_SERVER") in ~w(true 1) do
   config :wazi_route, WaziRouteWeb.Endpoint, server: true
 end
 
@@ -51,7 +51,7 @@ if config_env() == :prod do
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
   config :wazi_route, WaziRoute.Repo,
-    # ssl: true,
+    # PostgreSQL is on this server's loopback interface; no database TLS is required.
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     # For machines with several cores, consider starting multiple pools of `pool_size`
@@ -70,18 +70,25 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  host = System.get_env("PHX_HOST") || "example.com"
+  host =
+    System.get_env("PHX_HOST") ||
+      raise "environment variable PHX_HOST is missing. Set it to the public domain without https://."
+
+  bind_address = System.get_env("PHX_IP", "127.0.0.1")
+
+  bind_ip =
+    case :inet.parse_address(String.to_charlist(bind_address)) do
+      {:ok, address} -> address
+      {:error, _} -> raise "PHX_IP must be a valid IPv4 or IPv6 address"
+    end
 
   config :wazi_route, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
   config :wazi_route, WaziRouteWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
-      # Enable IPv6 and bind on all interfaces.
-      # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
-      # See the documentation on https://bandit.hexdocs.pm/Bandit.html#t:options/0
-      # for details about using IPv6 vs IPv4 and loopback vs public addresses.
-      ip: {0, 0, 0, 0, 0, 0, 0, 0}
+      # Only the same-server HTTPS proxy should reach Phoenix directly.
+      ip: bind_ip
     ],
     secret_key_base: secret_key_base
 

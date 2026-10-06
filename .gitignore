@@ -37,4 +37,8 @@ npm-debug.log
 
 *local.exs
 
+# Environment files contain deployment credentials; keep only templates in Git.
+.env
+.env.*
+
 implementation.md
