@@ -40,5 +40,6 @@ npm-debug.log
 # Environment files contain deployment credentials; keep only templates in Git.
 .env
 .env.*
+!.env.production.example
 
 implementation.md

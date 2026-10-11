@@ -1,5 +1,8 @@
 import Config
 
+# Only in tests, remove the complexity from the password hashing algorithm
+config :bcrypt_elixir, :log_rounds, 1
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
@@ -19,6 +22,9 @@ config :wazi_route, WaziRouteWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "0XU8lOjkQlMcMKOKTsAJuXjyCQhv7ttvlt9vEXCva65Pfkhc0wGQsaBcUKOyFIn3",
   server: false
+
+# Run mail jobs explicitly so Oban doesn't contend with the SQL sandbox.
+config :wazi_route, Oban, testing: :manual, plugins: false, queues: false
 
 # In test we don't send emails
 config :wazi_route, WaziRoute.Mailer, adapter: Swoosh.Adapters.Test

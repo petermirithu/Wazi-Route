@@ -1,19 +1,36 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="bumblebee">
+<html lang="en" data-theme="wazi">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#16445a" />
+    <meta name="theme-color" content="#273f30" />
     <title>You're offline — Wazi Route</title>
     <link rel="stylesheet" href="/assets/css/app.css" />
   </head>
-  <body class="grid min-h-dvh place-items-center bg-base-200 p-6 font-sans text-base-content antialiased">
-    <main id="offline-content" class="w-full max-w-lg rounded-box bg-base-100 p-8 sm:p-12">
-      <img src="/images/logos/web-app-manifest-192x192.png" alt="Wazi Route" width="192" height="192" class="mb-8 size-20 rounded-box" />
-      <h1 class="text-3xl font-semibold text-primary">A little off the grid.</h1>
-      <p class="mt-5 leading-8">You're offline. Reconnect to the internet to open Wazi Route.</p>
-      <p class="mt-4 text-sm leading-7 text-base-content/75">Live routes, traffic, and road conditions aren't available offline. This isn't an offline navigation app.</p>
-      <a id="offline-retry" href="/" class="mt-8 inline-flex min-h-12 items-center justify-center rounded-field bg-neutral px-6 py-3 font-semibold text-neutral-content hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">Try again</a>
+  <body class="wazi-pattern-light min-h-dvh font-sans text-base-content antialiased">
+    <div class="wazi-kitenge-border h-1.5" aria-hidden="true"></div>
+    <main id="offline-content" class="grid min-h-[calc(100dvh-0.375rem)] place-items-center p-5 sm:p-8">
+      <section class="grid w-full max-w-4xl overflow-hidden rounded-[2rem] border border-base-300 bg-base-100 shadow-xl lg:grid-cols-[0.72fr_1.28fr]">
+        <div class="wazi-pattern hidden p-10 text-primary-content lg:flex lg:flex-col lg:justify-between">
+          <img src="/images/wazi-mark.png" alt="" width="166" height="172" class="w-16 rounded-xl bg-base-100 p-2 mix-blend-multiply" />
+          <p class="mt-16 text-3xl leading-tight font-bold">Every good journey has a pause.</p>
+        </div>
+        <div class="p-7 sm:p-12 lg:p-14">
+          <div class="flex size-14 items-center justify-center rounded-2xl bg-accent/25 text-secondary" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="size-7"><path stroke-linecap="round" stroke-linejoin="round" d="M8.3 15.7a4.5 4.5 0 0 1 6.4 0M5.5 12.9a8.5 8.5 0 0 1 13 0M2.7 10a12.5 12.5 0 0 1 18.6 0M12 19h.01" /></svg>
+          </div>
+          <p class="mt-7 text-xs font-bold uppercase tracking-[0.1em] text-secondary">Connection paused</p>
+          <h1 class="mt-3 text-4xl leading-tight font-bold text-primary sm:text-5xl">A little off the grid.</h1>
+          <p class="mt-5 max-w-xl text-base leading-8 text-base-content/75">Wazi Route can't reach the internet right now. Reconnect, then continue from where you left off.</p>
+          <div class="mt-7 rounded-xl border border-base-300 bg-base-200 p-4 text-sm leading-7 text-base-content/70">
+            Live routes, traffic, and road conditions aren't available offline. Wazi Route does not provide offline navigation.
+          </div>
+          <a id="offline-retry" href="/" class="mt-8 inline-flex min-h-13 items-center justify-center gap-3 rounded-lg bg-secondary px-6 py-3 font-bold text-secondary-content transition hover:bg-primary focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
+            Try again
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3M4.5 4.5v4.2h4.2" /></svg>
+          </a>
+        </div>
+      </section>
     </main>
   </body>
 </html>

@@ -1,14 +1,14 @@
 {
   "name": "Wazi Route",
-  "short_name": "Wazi Route",
+  "short_name": "Wazi-R",
   "id": "/",
   "description": "Vehicle-aware route planning for Kenyan roads. Nairobi pilot coming soon.",
   "lang": "en",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#cbd6cf",
-  "theme_color": "#16445a",
+  "background_color": "#fffaf0",
+  "theme_color": "#fffaf0",
   "icons": [
     {
       "src": "/images/logos/web-app-manifest-192x192.png",
@@ -23,7 +23,7 @@
       "purpose": "any"
     },
     {
-      "src": "/images/logos/maskable-512x512.png",
+      "src": "/images/logos/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

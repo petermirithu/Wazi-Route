@@ -11,7 +11,13 @@ defmodule WaziRoute.RuntimeConfigTest do
     "PORT" => nil,
     "POOL_SIZE" => nil,
     "ECTO_IPV6" => nil,
-    "DNS_CLUSTER_QUERY" => nil
+    "DNS_CLUSTER_QUERY" => nil,
+    "SMTP_RELAY" => "smtp.example.org",
+    "SMTP_PORT" => nil,
+    "SMTP_USERNAME" => "smtp-user",
+    "SMTP_PASSWORD" => "smtp-password",
+    "SMTP_FROM_EMAIL" => "hello@example.org",
+    "SMTP_FROM_NAME" => "Wazi Route"
   }
 
   setup do
@@ -25,6 +31,7 @@ defmodule WaziRoute.RuntimeConfigTest do
     config = read_config()
     endpoint = config[:wazi_route][WaziRouteWeb.Endpoint]
     repo = config[:wazi_route][WaziRoute.Repo]
+    mailer = config[:wazi_route][WaziRoute.Mailer]
 
     assert endpoint[:server]
     assert endpoint[:http][:ip] == {127, 0, 0, 1}
@@ -33,6 +40,13 @@ defmodule WaziRoute.RuntimeConfigTest do
     assert repo[:url] == @environment["DATABASE_URL"]
     assert repo[:pool_size] == 10
     assert repo[:socket_options] == []
+    assert mailer[:adapter] == Swoosh.Adapters.SMTP
+    assert mailer[:relay] == "smtp.example.org"
+    assert mailer[:port] == 587
+    assert mailer[:username] == "smtp-user"
+    assert mailer[:password] == "smtp-password"
+    assert mailer[:tls] == :always
+    assert config[:wazi_route][:mail_from] == {"Wazi Route", "hello@example.org"}
   end
 
   test "supports explicit listener, pool, and IPv6 overrides" do
@@ -56,7 +70,8 @@ defmodule WaziRoute.RuntimeConfigTest do
   end
 
   test "fails early when required production environment is missing" do
-    for key <- ~w(DATABASE_URL SECRET_KEY_BASE PHX_HOST) do
+    for key <-
+          ~w(DATABASE_URL SECRET_KEY_BASE PHX_HOST SMTP_RELAY SMTP_USERNAME SMTP_PASSWORD SMTP_FROM_EMAIL) do
       System.delete_env(key)
 
       assert_raise RuntimeError, ~r/environment variable #{key} is missing/, fn ->
