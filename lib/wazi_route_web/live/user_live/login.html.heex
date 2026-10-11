@@ -1,0 +1,85 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <section class="wazi-pattern-light min-h-[calc(100dvh-5rem)] px-5 py-12 sm:px-8 lg:py-16">
+    <div class="mx-auto grid max-w-6xl overflow-hidden rounded-[2rem] border border-base-300 bg-base-100 shadow-xl lg:grid-cols-[.85fr_1.15fr]">
+      <div class="relative hidden min-h-[680px] overflow-hidden lg:block">
+        <img
+          src={~p"/images/sunlit-road.jpg"}
+          alt="A sunlit road under a canopy of trees"
+          width="1200"
+          height="1300"
+          class="size-full object-cover"
+        />
+        <div class="absolute inset-0 bg-linear-to-t from-neutral/85 via-neutral/20 to-transparent">
+        </div>
+        <div class="absolute right-10 bottom-10 left-10 text-white">
+          <p class="text-xs font-bold uppercase tracking-[0.1em] text-accent">Welcome back</p><p class="mt-4 text-4xl leading-tight font-bold">
+            The road feels different when it fits you.
+          </p>
+        </div>
+      </div>
+      <div class="flex flex-col justify-center p-6 sm:p-10 lg:p-14">
+        <p class="text-xs font-bold uppercase tracking-[0.1em] text-secondary">
+          Your Wazi account
+        </p>
+        <h1 id="login-title" class="mt-3 text-3xl font-bold text-primary sm:text-4xl">
+          Log in and keep moving.
+        </h1>
+        <p class="mt-3 text-sm leading-7 text-base-content/65">
+          <%= if @current_scope do %>
+            You need to reauthenticate to continue with this account change.
+          <% else %>
+            New to Wazi? <.link
+              navigate={~p"/users/register"}
+              class="font-bold text-secondary hover:underline"
+            >Register an account</.link>.
+          <% end %>
+        </p>
+        <div
+          :if={local_mail_adapter?()}
+          class="mt-6 flex gap-3 rounded-xl bg-info/10 p-4 text-sm text-info"
+        >
+          <.icon name="hero-information-circle" class="size-5 shrink-0" /><p>
+            Local email is enabled. View sent messages in <.link
+              href="/dev/mailbox"
+              class="font-bold underline"
+            >the mailbox</.link>.
+          </p>
+        </div>
+        <.form
+          for={@form}
+          id="login_form_password"
+          action={~p"/users/log-in"}
+          phx-submit="submit_password"
+          phx-trigger-action={@trigger_submit}
+          class="mt-8 space-y-4"
+        >
+          <.input
+            id="login_form_password_email"
+            readonly={!!@current_scope}
+            field={@form[:email]}
+            type="email"
+            label="Email address"
+            autocomplete="username"
+            placeholder="you@example.com"
+            spellcheck="false"
+            required
+          />
+          <.input
+            field={@form[:password]}
+            type="password"
+            label="Password"
+            autocomplete="current-password"
+            placeholder="Your password"
+            spellcheck="false"
+          />
+
+          <.button
+            class="inline-flex min-h-13 w-full items-center justify-center gap-3 rounded-lg bg-secondary px-5 font-bold text-secondary-content transition hover:bg-primary"
+            name={@form[:remember_me].name}
+            value="true"
+          >Log in <.icon name="hero-arrow-right" class="size-5" /></.button>
+        </.form>
+      </div>
+    </div>
+  </section>
+</Layouts.app>

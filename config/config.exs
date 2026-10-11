@@ -7,9 +7,27 @@
 # General application configuration
 import Config
 
+config :wazi_route, :scopes,
+  user: [
+    default: true,
+    module: WaziRoute.Accounts.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :id],
+    schema_key: :user_id,
+    schema_type: :id,
+    schema_table: :users,
+    test_data_fixture: WaziRoute.AccountsFixtures,
+    test_setup_helper: :register_and_log_in_user
+  ]
+
 config :wazi_route,
   ecto_repos: [WaziRoute.Repo],
   generators: [timestamp_type: :utc_datetime]
+
+config :wazi_route, Oban,
+  repo: WaziRoute.Repo,
+  plugins: [Oban.Plugins.Pruner],
+  queues: [default: 10, send_mail: 5]
 
 # Configure the endpoint
 config :wazi_route, WaziRouteWeb.Endpoint,
@@ -35,6 +53,7 @@ config :phoenix_live_view,
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
 config :wazi_route, WaziRoute.Mailer, adapter: Swoosh.Adapters.Local
+config :wazi_route, :mail_from, {"Wazi Route", "noreply@wazi-route.local"}
 
 # Configure esbuild (the version is required)
 config :esbuild,

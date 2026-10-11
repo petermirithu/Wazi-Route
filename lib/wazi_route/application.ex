@@ -10,6 +10,7 @@ defmodule WaziRoute.Application do
     children = [
       WaziRouteWeb.Telemetry,
       WaziRoute.Repo,
+      {Oban, Application.fetch_env!(:wazi_route, Oban)},
       {DNSCluster, query: Application.get_env(:wazi_route, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: WaziRoute.PubSub},
       # Start a worker by calling: WaziRoute.Worker.start_link(arg)

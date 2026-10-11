@@ -116,7 +116,7 @@ defmodule WaziRouteWeb.CoreComponents do
       """
     else
       ~H"""
-      <button class={@class} {@rest}>
+      <button class={"cursor-pointer #{@class}"} {@rest}>
         {render_slot(@inner_block)}
       </button>
       """
@@ -242,7 +242,7 @@ defmodule WaziRouteWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label for={@id}>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class="text-sm font-semibold text-base-content/80">{@label}</span>
         <select
           id={@id}
           name={@name}
@@ -263,7 +263,7 @@ defmodule WaziRouteWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label for={@id}>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class="text-sm font-semibold text-base-content/80">{@label}</span>
         <textarea
           id={@id}
           name={@name}
@@ -284,15 +284,16 @@ defmodule WaziRouteWeb.CoreComponents do
     ~H"""
     <div class="fieldset mb-2">
       <label for={@id}>
-        <span :if={@label} class="label mb-1">{@label}</span>
+        <span :if={@label} class="text-sm font-semibold text-base-content/80">{@label}</span>
         <input
           type={@type}
           name={@name}
           id={@id}
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
-            @class || "w-full input",
-            @errors != [] && (@error_class || "input-error")
+            @class ||
+              "mt-1.5 min-h-12 w-full rounded-xl border border-base-300 bg-base-100 px-4 text-sm text-base-content shadow-sm transition placeholder:text-base-content/35 hover:border-primary/40 focus:border-secondary focus:outline-none focus:ring-3 focus:ring-secondary/15",
+            @errors != [] && (@error_class || "border-error focus:border-error focus:ring-error/15")
           ]}
           {@rest}
         />

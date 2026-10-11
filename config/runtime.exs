@@ -38,6 +38,8 @@ if config_env() == :dev do
         ~r"lib/wazi_route_web/(controllers|live|components)/.*\.(ex|heex)$"E
       ]
     ]
+
+  config :swoosh, :api_client, true
 end
 
 if config_env() == :prod do
@@ -92,6 +94,48 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :swoosh, :api_client, false
+
+  smtp_relay =
+    System.get_env("SMTP_RELAY") ||
+      raise "environment variable SMTP_RELAY is missing"
+
+  smtp_username =
+    System.get_env("SMTP_USERNAME") ||
+      raise "environment variable SMTP_USERNAME is missing"
+
+  smtp_password =
+    System.get_env("SMTP_PASSWORD") ||
+      raise "environment variable SMTP_PASSWORD is missing"
+
+  from_email =
+    System.get_env("SMTP_FROM_EMAIL") ||
+      raise "environment variable SMTP_FROM_EMAIL is missing"
+
+  smtp_port = String.to_integer(System.get_env("SMTP_PORT", "587"))
+
+  config :wazi_route, :mail_from, {System.get_env("SMTP_FROM_NAME", "Wazi Route"), from_email}
+
+  config :wazi_route, WaziRoute.Mailer,
+    adapter: Swoosh.Adapters.SMTP,
+    relay: smtp_relay,
+    username: smtp_username,
+    password: smtp_password,
+    port: smtp_port,
+    auth: :always,
+    ssl: false,
+    tls: :always,
+    tls_options: [
+      versions: [:"tlsv1.2", :"tlsv1.3"],
+      verify: :verify_peer,
+      cacerts: :public_key.cacerts_get(),
+      server_name_indication: String.to_charlist(smtp_relay),
+      depth: 4,
+      customize_hostname_check: [
+        match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
+      ]
+    ]
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key
@@ -123,22 +167,4 @@ if config_env() == :prod do
   #       force_ssl: [hsts: true]
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
-
-  # ## Configuring the mailer
-  #
-  # In production you need to configure the mailer to use a different adapter.
-  # Here is an example configuration for Mailgun:
-  #
-  #     config :wazi_route, WaziRoute.Mailer,
-  #       adapter: Swoosh.Adapters.Mailgun,
-  #       api_key: System.get_env("MAILGUN_API_KEY"),
-  #       domain: System.get_env("MAILGUN_DOMAIN")
-  #
-  # Most non-SMTP adapters require an API client. Swoosh supports Req, Hackney,
-  # and Finch out-of-the-box. This configuration is typically done at
-  # compile-time in your config/prod.exs:
-  #
-  #     config :swoosh, :api_client, Swoosh.ApiClient.Req
-  #
-  # See https://swoosh.hexdocs.pm/Swoosh.html#module-installation for details.
 end
