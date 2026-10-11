@@ -1,0 +1,104 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <section class="wazi-pattern-light min-h-[calc(100dvh-5rem)] px-5 py-10 sm:px-8 lg:px-12 lg:py-14">
+    <div class="mx-auto max-w-[1440px]">
+      <div class="grid items-end gap-6 lg:grid-cols-[1fr_auto]">
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.1em] text-secondary">
+            Your Wazi workspace
+          </p>
+          <h1
+            id="dashboard-title"
+            class="mt-3 text-4xl leading-tight font-bold text-primary sm:text-5xl"
+          >
+            Habari, {@current_scope.user.first_name}.
+          </h1>
+          <p class="mt-4 max-w-2xl text-sm leading-7 text-base-content/65 sm:text-base">
+            Your personal route planner is taking shape. Soon, this is where every considered journey will begin.
+          </p>
+        </div>
+        <.link
+          href={~p"/"}
+          class="inline-flex min-h-12 items-center gap-2 rounded-lg border border-primary px-5 text-sm font-bold text-primary transition hover:bg-primary hover:text-primary-content"
+        >
+          Explore Wazi Route <.icon name="hero-arrow-up-right" class="size-4" />
+        </.link>
+      </div>
+
+      <div class="mt-10 grid gap-6 lg:grid-cols-[1.35fr_.65fr]">
+        <section
+          class="relative overflow-hidden rounded-[2rem] bg-primary p-6 text-primary-content shadow-xl sm:p-9"
+          aria-labelledby="planner-title"
+        >
+          <div
+            class="absolute -right-16 -top-16 size-64 rounded-full border-[44px] border-accent/10"
+            aria-hidden="true"
+          >
+          </div>
+          <div class="relative">
+            <div class="flex items-start justify-between gap-5">
+              <div>
+                <p class="text-xs font-bold uppercase tracking-[0.1em] text-accent">
+                  Plan a drive
+                </p>
+                <h2 id="planner-title" class="mt-3 text-3xl font-bold sm:text-4xl">
+                  Where are you headed?
+                </h2>
+              </div>
+              <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-base-100/10"><.icon
+                name="hero-map-pin"
+                class="size-6 text-accent"
+              /></span>
+            </div>
+
+            <div class="mt-10 grid gap-4 sm:grid-cols-2">
+              <div class="rounded-xl border border-primary-content/15 bg-base-100/5 p-5">
+                <p class="text-xs text-primary-content/55">Starting point</p>
+                <p class="mt-2 font-semibold">Choose your location</p>
+              </div>
+              <div class="rounded-xl border border-primary-content/15 bg-base-100/5 p-5">
+                <p class="text-xs text-primary-content/55">Destination</p>
+                <p class="mt-2 font-semibold">Where to?</p>
+              </div>
+            </div>
+
+            <div class="mt-6 flex flex-wrap items-center justify-between gap-4 border-t border-primary-content/15 pt-6">
+              <p class="max-w-md text-xs leading-6 text-primary-content/55">
+                Route planning is coming next. Your profile is ready while local road coverage grows.
+              </p>
+              <span class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-accent/15 px-4 text-xs font-bold text-accent"><.icon
+                name="hero-clock"
+                class="size-4"
+              /> Coming soon</span>
+            </div>
+          </div>
+        </section>
+
+        <aside class="grid gap-6">
+          <section class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
+            <div class="flex size-11 items-center justify-center rounded-xl bg-accent/25 text-secondary">
+              <.icon name="hero-user-circle" class="size-6" />
+            </div>
+            <h2 class="mt-5 text-xl font-bold text-primary">Make it yours</h2>
+            <p class="mt-2 text-sm leading-7 text-base-content/65">
+              Keep your driver details current as personalized route preferences arrive.
+            </p>
+            <.link
+              href={~p"/profile"}
+              class="mt-5 inline-flex min-h-11 items-center gap-2 text-sm font-bold text-secondary hover:underline"
+            >View profile <.icon name="hero-arrow-right" class="size-4" /></.link>
+          </section>
+
+          <section class="rounded-2xl border border-base-300 bg-base-200 p-6">
+            <p class="text-xs font-bold uppercase tracking-[0.1em] text-secondary">
+              Pilot coverage
+            </p>
+            <h2 class="mt-3 text-xl font-bold text-primary">Nairobi northwest</h2>
+            <p class="mt-2 text-sm leading-7 text-base-content/65">
+              Ruaka · Redhill · ABC · Loresho
+            </p>
+          </section>
+        </aside>
+      </div>
+    </div>
+  </section>
+</Layouts.app>
