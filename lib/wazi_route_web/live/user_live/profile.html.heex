@@ -1,0 +1,163 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <section class="wazi-pattern-light min-h-[calc(100dvh-5rem)] px-5 py-12 sm:px-8 lg:py-16">
+    <div class="mx-auto max-w-6xl">
+      <div class="mb-10 flex flex-col gap-6 rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm sm:flex-row sm:items-center sm:p-8">
+        <div class="flex size-20 shrink-0 items-center justify-center rounded-full bg-primary text-2xl font-bold uppercase text-primary-content ring-4 ring-accent/35">
+          {String.first(@current_scope.user.first_name)}{String.first(
+            @current_scope.user.last_name
+          )}
+        </div>
+        <div>
+          <p class="text-xs font-bold uppercase tracking-[0.1em] text-secondary">Your profile</p>
+          <h1 id="profile-title" class="mt-2 text-3xl font-bold text-primary sm:text-4xl">
+            {@current_scope.user.first_name} {@current_scope.user.last_name}
+          </h1>
+          <p class="mt-2 text-sm text-base-content/60">{@current_scope.user.email}</p>
+        </div>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-2">
+        <section
+          class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm sm:p-8"
+          aria-labelledby="personal-details-title"
+        >
+          <div class="flex size-12 items-center justify-center rounded-xl bg-accent/25 text-secondary">
+            <.icon name="hero-user" class="size-6" />
+          </div>
+          <h2 id="personal-details-title" class="mt-6 text-2xl font-bold text-primary">
+            Personal details
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-base-content/65">
+            Keep the name shown across your Wazi Route account up to date.
+          </p>
+          <.form
+            for={@profile_form}
+            id="profile-form"
+            phx-submit="update_profile"
+            phx-change="validate_profile"
+            class="mt-7 space-y-4"
+          >
+            <div class="grid gap-4 sm:grid-cols-2">
+              <.input
+                field={@profile_form[:first_name]}
+                type="text"
+                label="First name"
+                autocomplete="given-name"
+                required
+              />
+              <.input
+                field={@profile_form[:last_name]}
+                type="text"
+                label="Last name"
+                autocomplete="family-name"
+                required
+              />
+            </div>
+            <.button
+              phx-disable-with="Saving..."
+              class="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-secondary px-5 font-bold text-secondary-content transition hover:bg-primary"
+            >
+              Save profile <.icon name="hero-check" class="size-4" />
+            </.button>
+          </.form>
+        </section>
+
+        <section
+          class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm sm:p-8"
+          aria-labelledby="email-profile-title"
+        >
+          <div class="flex size-12 items-center justify-center rounded-xl bg-accent/25 text-secondary">
+            <.icon name="hero-envelope" class="size-6" />
+          </div>
+          <h2 id="email-profile-title" class="mt-6 text-2xl font-bold text-primary">
+            Email address
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-base-content/65">
+            A confirmation link will be sent to your new address before it changes.
+          </p>
+          <.form
+            for={@email_form}
+            id="email_form"
+            phx-submit="update_email"
+            phx-change="validate_email"
+            class="mt-7 space-y-4"
+          >
+            <.input
+              field={@email_form[:email]}
+              type="email"
+              label="Email address"
+              autocomplete="username"
+              spellcheck="false"
+              required
+            />
+            <.button
+              phx-disable-with="Sending..."
+              class="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-secondary px-5 font-bold text-secondary-content transition hover:bg-primary"
+            >
+              Change email <.icon name="hero-paper-airplane" class="size-4" />
+            </.button>
+          </.form>
+        </section>
+
+        <section
+          class="rounded-2xl bg-primary p-6 text-primary-content shadow-sm sm:p-8 lg:col-span-2"
+          aria-labelledby="password-profile-title"
+        >
+          <div class="grid gap-8 lg:grid-cols-[.75fr_1.25fr] lg:items-start">
+            <div>
+              <div class="flex size-12 items-center justify-center rounded-xl bg-accent text-accent-content">
+                <.icon name="hero-lock-closed" class="size-6" />
+              </div>
+              <h2 id="password-profile-title" class="mt-6 text-2xl font-bold">Password</h2>
+              <p class="mt-2 max-w-sm text-sm leading-6 text-primary-content/65">
+                Use at least 12 characters. Saving a new password securely refreshes your session.
+              </p>
+            </div>
+            <.form
+              for={@password_form}
+              id="password_form"
+              action={~p"/users/update-password"}
+              method="post"
+              phx-change="validate_password"
+              phx-submit="update_password"
+              phx-trigger-action={@trigger_submit}
+              class="space-y-4 [&_label>span]:text-primary-content [&_input]:bg-base-100 [&_input]:text-base-content"
+            >
+              <input
+                name={@password_form[:email].name}
+                type="hidden"
+                id="hidden_user_email"
+                spellcheck="false"
+                value={@current_email}
+              />
+              <div class="grid gap-4 sm:grid-cols-2">
+                <.input
+                  field={@password_form[:password]}
+                  type="password"
+                  label="New password"
+                  autocomplete="new-password"
+                  spellcheck="false"
+                  required
+                />
+                <.input
+                  field={@password_form[:password_confirmation]}
+                  type="password"
+                  label="Confirm new password"
+                  autocomplete="new-password"
+                  spellcheck="false"
+                  required
+                />
+              </div>
+              <.button
+                phx-disable-with="Saving..."
+                class="inline-flex min-h-12 items-center justify-center gap-2 rounded-lg bg-accent px-5 font-bold text-accent-content transition hover:bg-base-100"
+              >
+                Save password <.icon name="hero-check" class="size-4" />
+              </.button>
+            </.form>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+</Layouts.app>
