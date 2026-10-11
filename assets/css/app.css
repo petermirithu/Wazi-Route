@@ -20,35 +20,35 @@
   themes: false;
 }
 
-/* Shared theme tokens also style existing Phoenix form and flash components. */
+/* Wazi's palette draws on Kenyan earth, acacia greens, and sun-warmed roads. */
 @plugin "daisyui/packages/bundle/daisyui-theme" {
-  name: "bumblebee";
+  name: "wazi";
   default: true;
   prefersdark: false;
   color-scheme: "light";
-  --color-base-100: #f4f5f1;
-  --color-base-200: #e7ede8;
-  --color-base-300: #cbd6cf;
-  --color-base-content: #233e43;
-  --color-primary: #16445a;
-  --color-primary-content: #ffffff;
-  --color-secondary: #28785d;
-  --color-secondary-content: #ffffff;
-  --color-accent: #efa844;
-  --color-accent-content: #173a45;
-  --color-neutral: #163e4c;
-  --color-neutral-content: #f4f5f1;
-  --color-info: oklch(74% 0.16 232.661);
-  --color-info-content: oklch(39% 0.09 240.876);
-  --color-success: oklch(76% 0.177 163.223);
-  --color-success-content: oklch(37% 0.077 168.94);
-  --color-warning: oklch(82% 0.189 84.429);
-  --color-warning-content: oklch(41% 0.112 45.904);
-  --color-error: oklch(70% 0.191 22.216);
-  --color-error-content: oklch(39% 0.141 25.723);
-  --radius-selector: 2rem;
-  --radius-field: 2rem;
-  --radius-box: 2rem;
+  --color-base-100: #fffaf0;
+  --color-base-200: #f3ead8;
+  --color-base-300: #dbcdb5;
+  --color-base-content: #24352a;
+  --color-primary: #273f30;
+  --color-primary-content: #fffaf0;
+  --color-secondary: #a94f2d;
+  --color-secondary-content: #fffaf0;
+  --color-accent: #e9ad45;
+  --color-accent-content: #24352a;
+  --color-neutral: #1e2922;
+  --color-neutral-content: #fffaf0;
+  --color-info: #4e7d83;
+  --color-info-content: #ffffff;
+  --color-success: #55734e;
+  --color-success-content: #ffffff;
+  --color-warning: #e9ad45;
+  --color-warning-content: #372b18;
+  --color-error: #a43e32;
+  --color-error-content: #ffffff;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.75rem;
+  --radius-box: 1.25rem;
   --size-selector: 0.25rem;
   --size-field: 0.25rem;
   --border: 1px;
@@ -67,4 +67,24 @@
 
 @theme {
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer utilities {
+  .wazi-pattern {
+    background-color: #273f30;
+    background-image:
+      radial-gradient(circle at 100% 0%, transparent 0 8rem, rgb(233 173 69 / 0.14) 8.05rem 8.15rem, transparent 8.2rem 12rem, rgb(255 250 240 / 0.08) 12.05rem 12.15rem, transparent 12.2rem),
+      radial-gradient(circle at 0% 100%, transparent 0 5rem, rgb(169 79 45 / 0.16) 5.05rem 5.15rem, transparent 5.2rem 9rem);
+  }
+
+  .wazi-pattern-light {
+    background-color: #fffaf0;
+    background-image:
+      radial-gradient(circle at 100% 0%, rgb(233 173 69 / 0.09), transparent 28rem),
+      radial-gradient(circle at 0% 100%, rgb(169 79 45 / 0.055), transparent 24rem);
+  }
+
+  .wazi-kitenge-border {
+    background: repeating-linear-gradient(90deg, #273f30 0 28px, #e9ad45 28px 42px, #a94f2d 42px 70px, #fffaf0 70px 78px);
+  }
 }

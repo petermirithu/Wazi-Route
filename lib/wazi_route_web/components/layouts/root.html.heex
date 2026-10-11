@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="bumblebee" class="scroll-smooth scroll-pt-8 motion-reduce:scroll-auto">
+<html lang="en" data-theme="wazi" class="scroll-smooth scroll-pt-24 motion-reduce:scroll-auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -9,7 +9,7 @@
       name="description"
       content="Meet Wazi Route, a vehicle-aware route planner being built for Kenyan roads. Compare road conditions, hill traffic, and your driving preferences. Nairobi pilot coming soon."
     />
-    <meta name="theme-color" content="#16445a" />
+    <meta name="theme-color" content="#273f30" />
     <link phx-track-static rel="stylesheet" href={~p"/assets/css/app.css"} />
     <%!-- Keep the install manifest at a stable URL rather than an asset-digested path. --%>
     <link rel="manifest" href="/manifest.json" />
@@ -21,7 +21,7 @@
     <script defer phx-track-static type="text/javascript" src={~p"/assets/js/app.js"}>
     </script>
   </head>
-  <body class="min-h-dvh bg-base-200 p-3 font-sans text-base-content antialiased selection:bg-accent selection:text-accent-content sm:p-5 lg:p-8 has-[#launch-dialog[open]]:overflow-hidden [&_[data-phx-session]]:contents [&_[data-phx-teleported-src]]:contents [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-4 [&_:focus-visible]:outline-primary">
+  <body class="min-h-dvh overflow-x-hidden bg-base-100 font-sans text-base-content antialiased selection:bg-accent selection:text-accent-content has-[#launch-dialog[open]]:overflow-hidden [&_[data-phx-session]]:contents [&_[data-phx-teleported-src]]:contents [&_:focus-visible]:outline-2 [&_:focus-visible]:outline-offset-4 [&_:focus-visible]:outline-primary">
     {@inner_content}
   </body>
 </html>
