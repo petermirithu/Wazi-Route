@@ -23,6 +23,12 @@ end
 config :wazi_route, WaziRouteWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4020"))]
 
+config :wazi_route, WaziRoute.Location.Geocoding.Geoapify,
+  api_key: System.get_env("GEOAPIFY_API_KEY")
+
+config :wazi_route, WaziRoute.Location.Routing.OpenRouteService,
+  api_key: System.get_env("OPENROUTESERVICE_API_KEY")
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :wazi_route, WaziRouteWeb.Endpoint,

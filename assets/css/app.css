@@ -3,6 +3,7 @@
 
 @import "tailwindcss" source(none);
 @import "./fonts.css";
+@import "../node_modules/leaflet/dist/leaflet.css";
 @import "phoenix-colocated/wazi_route/colocated.css";
 @source "../css";
 @source "../js";
@@ -86,5 +87,14 @@
 
   .wazi-kitenge-border {
     background: repeating-linear-gradient(90deg, #273f30 0 28px, #e9ad45 28px 42px, #a94f2d 42px 70px, #fffaf0 70px 78px);
+  }
+
+  .wazi-route-map .leaflet-control-attribution {
+    border-radius: 0.5rem 0 0 0;
+    font-family: var(--font-sans);
+  }
+
+  .wazi-route-map .leaflet-control-zoom a {
+    color: #273f30;
   }
 }

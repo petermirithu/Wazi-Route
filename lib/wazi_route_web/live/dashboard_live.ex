@@ -1,8 +1,157 @@
 defmodule WaziRouteWeb.DashboardLive do
   use WaziRouteWeb, :live_view
 
+  alias WaziRoute.Location
+
   @impl true
   def mount(_params, _session, socket) do
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(
+       form: planner_form(),
+       planner_state: :idle,
+       planner_error: nil,
+       origin: nil,
+       destination: nil,
+       route_count: 0,
+       route_options: [],
+       selected_route_id: nil
+     )
+     |> stream(:routes, [])}
+  end
+
+  @impl true
+  def handle_event("submit", %{"journey_form" => params}, socket) do
+    origin = String.trim(params["starting_point"] || "")
+    destination = String.trim(params["destination_point"] || "")
+
+    if origin == "" or destination == "" do
+      {:noreply,
+       assign(socket,
+         form: planner_form(params),
+         planner_state: :error,
+         planner_error: "Enter both a starting point and destination."
+       )}
+    else
+      current_scope = socket.assigns.current_scope
+
+      {:noreply,
+       socket
+       |> assign(
+         form: planner_form(params),
+         planner_state: :loading,
+         planner_error: nil,
+         origin: nil,
+         destination: nil,
+         route_count: 0,
+         route_options: [],
+         selected_route_id: nil
+       )
+       |> stream(:routes, [], reset: true)
+       |> start_async(:plan_routes, fn ->
+         Location.plan_routes(current_scope, origin, destination)
+       end)}
+    end
+  end
+
+  @impl true
+  def handle_event("validate", %{"journey_form" => params}, socket) do
+    {:noreply, assign(socket, :form, planner_form(params))}
+  end
+
+  def handle_event("select-route", %{"route-id" => route_id}, socket) do
+    case Enum.find(socket.assigns.route_options, &(&1.id == route_id)) do
+      nil ->
+        {:noreply, socket}
+
+      route ->
+        {:noreply,
+         socket
+         |> assign(:selected_route_id, route.id)
+         |> stream(:routes, socket.assigns.route_options, reset: true)
+         |> push_event(
+           "route-selected",
+           route_payload(route, socket.assigns.origin, socket.assigns.destination)
+         )}
+    end
+  end
+
+  @impl true
+  def handle_async(:plan_routes, {:ok, {:ok, result}}, socket) do
+    [selected_route | _] = result.routes
+
+    {:noreply,
+     socket
+     |> assign(
+       planner_state: :ready,
+       planner_error: nil,
+       origin: result.origin,
+       destination: result.destination,
+       route_count: length(result.routes),
+       route_options: result.routes,
+       selected_route_id: selected_route.id
+     )
+     |> stream(:routes, result.routes, reset: true)
+     |> push_event(
+       "route-selected",
+       route_payload(selected_route, result.origin, result.destination)
+     )}
+  end
+
+  def handle_async(:plan_routes, {:ok, {:error, reason}}, socket) do
+    {:noreply,
+     assign(socket,
+       planner_state: :error,
+       planner_error: error_message(reason),
+       route_count: 0
+     )}
+  end
+
+  def handle_async(:plan_routes, {:exit, _reason}, socket) do
+    {:noreply,
+     assign(socket,
+       planner_state: :error,
+       planner_error: "Route planning is temporarily unavailable. Please try again.",
+       route_count: 0
+     )}
+  end
+
+  defp planner_form(params \\ %{"starting_point" => "", "destination_point" => ""}) do
+    to_form(params, as: :journey_form)
+  end
+
+  defp route_payload(route, origin, destination) do
+    %{
+      id: route.id,
+      geometry: route.geometry,
+      origin: [origin.latitude, origin.longitude],
+      destination: [destination.latitude, destination.longitude]
+    }
+  end
+
+  defp error_message(:missing_api_key),
+    do: "Route planning needs its provider API keys configured."
+
+  defp error_message(:origin_not_found),
+    do: "We couldn't find that starting point. Try adding the area or city."
+
+  defp error_message(:destination_not_found),
+    do: "We couldn't find that destination. Try adding the area or city."
+
+  defp error_message(:no_routes_found),
+    do: "No driving routes were found between those locations."
+
+  defp error_message(_reason),
+    do: "Route planning is temporarily unavailable. Please try again."
+
+  defp format_distance(distance_m), do: "#{Float.round(distance_m / 1000, 1)} km"
+
+  defp format_duration(duration_s) do
+    minutes = duration_s |> Kernel./(60) |> Float.ceil() |> trunc()
+
+    case div(minutes, 60) do
+      0 -> "#{minutes} min"
+      hours -> "#{hours} hr #{rem(minutes, 60)} min"
+    end
   end
 end

@@ -33,10 +33,19 @@ Built with Elixir, Phoenix LiveView, and PostgreSQL.
    mix setup
    ```
 
-4. Start the development server:
+4. Create free API keys for [Geoapify](https://myprojects.geoapify.com/) and [openrouteservice](https://openrouteservice.org/dev/#/signup), then expose them to the application:
+
+   ```bash
+   export GEOAPIFY_API_KEY="your-geoapify-key"
+   export OPENROUTESERVICE_API_KEY="your-openrouteservice-key"
+   ```
+
+   Keep these values out of source control. They are required for dashboard route planning.
+
+5. Start the development server:
 
    ```bash
    mix phx.server
    ```
 
-5. Open [localhost:4000](http://localhost:4000) in your browser.
+6. Open [localhost:4000](http://localhost:4000) in your browser.

@@ -29,6 +29,9 @@ config :wazi_route, Oban,
   plugins: [Oban.Plugins.Pruner],
   queues: [default: 10, send_mail: 5]
 
+config :wazi_route, :geocoding_provider, WaziRoute.Location.Geocoding.Geoapify
+config :wazi_route, :routing_provider, WaziRoute.Location.Routing.OpenRouteService
+
 # Configure the endpoint
 config :wazi_route, WaziRouteWeb.Endpoint,
   url: [host: "localhost"],
