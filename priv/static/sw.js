@@ -1,11 +1,15 @@
 const CACHE_PREFIX = "wazi-route-pwa-"
-const CACHE_NAME = `${CACHE_PREFIX}v2`
+const CACHE_NAME = `${CACHE_PREFIX}v3`
 const OFFLINE_URL = "/offline.html"
 const OFFLINE_ASSETS = [
   OFFLINE_URL,
   "/assets/css/app.css",
   "/fonts/poppins-regular.ttf",
   "/fonts/poppins-semibold.ttf",
+  "/fonts/poppins-bold.ttf",
+  "/images/wazi-mark.png",
+  "/images/wazi-wordmark.png",
+  "/images/forest-road-small.jpg",
   "/images/logos/web-app-manifest-192x192.png",
 ]
 
