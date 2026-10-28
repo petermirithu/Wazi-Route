@@ -14,8 +14,14 @@ defmodule WaziRoute.Location do
            geocode_first(geocoding_provider, destination_query, :destination_not_found),
          {:ok, routes} <-
            routing_provider.routes(coordinates(origin), coordinates(destination), limit: 3),
+         routes =
+           routes
+           |> Enum.uniq_by(& &1.geometry)
+           |> Enum.take(3)
+           |> Enum.with_index(1)
+           |> Enum.map(fn {route, index} -> %{route | id: "route-#{index}"} end),
          [_ | _] <- routes do
-      {:ok, %{origin: origin, destination: destination, routes: Enum.take(routes, 3)}}
+      {:ok, %{origin: origin, destination: destination, routes: routes}}
     else
       [] -> {:error, :no_routes_found}
       {:error, reason} -> {:error, reason}

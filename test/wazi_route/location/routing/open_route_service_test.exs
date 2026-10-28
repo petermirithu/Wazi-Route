@@ -22,11 +22,14 @@ defmodule WaziRoute.Location.Routing.OpenRouteServiceTest do
         for index <- 1..4 do
           %{
             "properties" => %{
-              "summary" => %{"distance" => 10_000 + index, "duration" => 1_200 + index}
+              "summary" => %{"distance" => 10_000 + index, "duration" => 1_200 + index},
+              "segments" => [
+                %{"steps" => [%{"name" => "Waiyaki Way"}, %{"name" => "Red Hill Link Road"}]}
+              ]
             },
             "geometry" => %{
               "type" => "LineString",
-              "coordinates" => [[36.7784, -1.2044], [36.7384, -1.2527]]
+              "coordinates" => [[36.7784, -1.2044], [36.7384 + index / 10_000, -1.2527]]
             }
           }
         end
@@ -40,6 +43,27 @@ defmodule WaziRoute.Location.Routing.OpenRouteServiceTest do
     assert length(routes) == 3
     assert Enum.map(routes, & &1.id) == ["route-1", "route-2", "route-3"]
     assert Enum.all?(routes, &(&1.geometry["type"] == "LineString"))
+    assert Enum.all?(routes, &(&1.via == ["Waiyaki Way", "Red Hill Link Road"]))
+  end
+
+  test "does not duplicate identical route options" do
+    route = %{
+      "properties" => %{
+        "summary" => %{"distance" => 10_000, "duration" => 1_200},
+        "segments" => [%{"steps" => [%{"name" => "Limuru Road"}]}]
+      },
+      "geometry" => %{
+        "type" => "LineString",
+        "coordinates" => [[36.7784, -1.2044], [36.7384, -1.2527]]
+      }
+    }
+
+    Req.Test.stub(__MODULE__, fn conn -> Req.Test.json(conn, %{"features" => [route, route]}) end)
+
+    assert {:ok, [candidate]} =
+             OpenRouteService.routes({-1.2044, 36.7784}, {-1.2527, 36.7384}, limit: 3)
+
+    assert candidate.via == ["Limuru Road"]
   end
 
   test "reports a missing API key without making a request" do

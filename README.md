@@ -48,4 +48,6 @@ Built with Elixir, Phoenix LiveView, and PostgreSQL.
    mix phx.server
    ```
 
-6. Open [localhost:4000](http://localhost:4000) in your browser.
+6. Open [localhost:4000](http://localhost:4000) in your browser. Signed-in users are redirected to `/dashboard`; visitors are redirected to the public `/discover` page, which remains accessible after login.
+
+The dashboard keeps the map fullscreen, with a floating side panel on desktop and a scrollable bottom sheet on mobile. Selecting a route fits it into the unobstructed map area; **Search again** returns to the populated form.

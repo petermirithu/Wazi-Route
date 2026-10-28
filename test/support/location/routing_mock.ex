@@ -11,9 +11,17 @@ defmodule WaziRoute.Location.Routing.Mock do
           id: "route-#{index}",
           distance_m: 12_900 + (index - 1) * 850,
           duration_s: 1_500 + index * 180,
+          via:
+            Enum.at(
+              [["Limuru Road"], ["Red Hill Link Road", "Waiyaki Way"], ["Lower Kabete Road"]],
+              index - 1
+            ),
           geometry: %{
             "type" => "LineString",
-            "coordinates" => [[36.7784, -1.2044], [36.7384, -1.2527]]
+            "coordinates" => [
+              [36.7784, -1.2044],
+              [36.7384 + index / 10_000, -1.2527]
+            ]
           }
         }
       end

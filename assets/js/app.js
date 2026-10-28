@@ -24,6 +24,7 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import {hooks as colocatedHooks} from "phoenix-colocated/wazi_route"
 import topbar from "../vendor/topbar"
+import PlannerPanel from "./planner_panel"
 import RouteMap from "./route_map"
 import "./landing"
 import "./pwa"
@@ -32,7 +33,7 @@ const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks, RouteMap},
+  hooks: {...colocatedHooks, PlannerPanel, RouteMap},
 })
 
 // Show progress bar on live navigation and form submits

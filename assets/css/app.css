@@ -70,6 +70,10 @@
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
 }
 
+.wazi-route-map .leaflet-bottom {
+  bottom: var(--planner-overlay-height, 0px);
+}
+
 @layer utilities {
   .wazi-pattern {
     background-color: #273f30;
@@ -87,6 +91,81 @@
 
   .wazi-kitenge-border {
     background: repeating-linear-gradient(90deg, #273f30 0 28px, #e9ad45 28px 42px, #a94f2d 42px 70px, #fffaf0 70px 78px);
+  }
+
+  .wazi-map-controls {
+    top: max(1rem, env(safe-area-inset-top));
+  }
+
+  .wazi-planner-sheet {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: 55dvh;
+    border-radius: 1.75rem 1.75rem 0 0;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    scrollbar-width: thin;
+    scrollbar-color: #e9ad45 transparent;
+  }
+
+  .wazi-planner-sheet[data-state="ready"] {
+    max-height: 48dvh;
+  }
+
+  @media (width < 48rem) {
+    .wazi-planner-sheet #planner-title {
+      font-size: 1.25rem;
+    }
+
+    .wazi-planner-sheet #journey-form {
+      margin-top: 1rem;
+    }
+
+    .wazi-planner-sheet #journey-form > div {
+      gap: 0.75rem;
+    }
+
+    .wazi-planner-sheet #planner-results {
+      margin-top: -0.5rem;
+    }
+
+    .wazi-planner-sheet #candidate-routes button {
+      padding: 0.875rem;
+    }
+
+    .wazi-planner-sheet #candidate-routes dl {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+    }
+
+    .wazi-planner-sheet #candidate-routes dl > div {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .wazi-planner-sheet #candidate-routes dd {
+      margin-top: 0;
+    }
+  }
+
+  @media (width >= 48rem) {
+    .wazi-planner-sheet,
+    .wazi-planner-sheet[data-state="ready"] {
+      top: 6rem;
+      bottom: auto;
+      left: 1.5rem;
+      width: 28rem;
+      max-height: calc(100dvh - 7rem);
+      border-radius: 1.75rem;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .wazi-planner-sheet,
+    .wazi-planner-sheet[data-state="ready"] {
+      left: 2rem;
+    }
   }
 
   .wazi-route-map .leaflet-control-attribution {

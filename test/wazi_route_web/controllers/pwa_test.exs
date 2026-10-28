@@ -32,7 +32,7 @@ defmodule WaziRouteWeb.PWATest do
   end
 
   test "provides Apple install metadata and manual installation help", %{conn: conn} do
-    page = conn |> get(~p"/") |> html_response(200) |> LazyHTML.from_document()
+    page = conn |> get(~p"/discover") |> html_response(200) |> LazyHTML.from_document()
 
     assert page |> LazyHTML.query("link[rel='manifest']") |> LazyHTML.attribute("href") == [
              "/manifest.json"

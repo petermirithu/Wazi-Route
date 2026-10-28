@@ -20,7 +20,8 @@ defmodule WaziRouteWeb.Router do
   scope "/", WaziRouteWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", PageController, :index
+    get "/discover", PageController, :home
   end
 
   # Other scopes may use custom stacks.

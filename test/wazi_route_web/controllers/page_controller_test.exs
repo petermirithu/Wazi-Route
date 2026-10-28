@@ -2,8 +2,18 @@ defmodule WaziRouteWeb.PageControllerTest do
   use WaziRouteWeb.ConnCase
 
   setup %{conn: conn} do
-    document = conn |> get(~p"/") |> html_response(200) |> LazyHTML.from_document()
+    document = conn |> get(~p"/discover") |> html_response(200) |> LazyHTML.from_document()
     %{document: document}
+  end
+
+  test "visitors at the root are sent to Discover", %{conn: conn} do
+    assert conn |> get(~p"/") |> redirected_to() == ~p"/discover"
+  end
+
+  test "signed-in users at the root are sent to their dashboard", %{conn: conn} do
+    user = WaziRoute.AccountsFixtures.user_fixture()
+    conn = conn |> log_in_user(user) |> get(~p"/")
+    assert redirected_to(conn) == ~p"/dashboard"
   end
 
   test "presents the vehicle-aware product and its core sections", %{document: document} do

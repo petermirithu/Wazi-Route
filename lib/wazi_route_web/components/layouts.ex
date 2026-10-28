@@ -31,6 +31,8 @@ defmodule WaziRouteWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://phoenix.hexdocs.pm/scopes.html)"
 
+  attr :chrome, :boolean, default: true, doc: "whether to render the global header and footer"
+
   slot :inner_block, required: true
 
   def app(assigns) do
@@ -43,8 +45,11 @@ defmodule WaziRouteWeb.Layouts do
     </a>
 
     <div class="min-h-dvh">
-      <div class="wazi-kitenge-border h-1.5" aria-hidden="true"></div>
-      <header class="relative z-20 border-b border-base-300/70 bg-base-100/95 backdrop-blur-lg">
+      <div :if={@chrome} class="wazi-kitenge-border h-1.5" aria-hidden="true"></div>
+      <header
+        :if={@chrome}
+        class="relative z-20 border-b border-base-300/70 bg-base-100/95 backdrop-blur-lg"
+      >
         <nav
           aria-label="Main navigation"
           class="mx-auto flex min-h-20 max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-12"
@@ -77,18 +82,21 @@ defmodule WaziRouteWeb.Layouts do
                 navigate={~p"/dashboard"}
                 class="text-sm font-semibold text-primary transition-colors hover:text-secondary"
               >Workspace</.link>
-              <a href={~p"/"} class="text-sm font-medium transition-colors hover:text-secondary">Discover Wazi</a>
+              <a
+                href={~p"/discover"}
+                class="text-sm font-medium transition-colors hover:text-secondary"
+              >Discover Wazi</a>
             <% else %>
               <a
-                href={~p"/" <> "#why-wazi"}
+                href={~p"/discover" <> "#why-wazi"}
                 class="text-sm font-medium transition-colors hover:text-secondary"
               >Why Wazi</a>
               <a
-                href={~p"/" <> "#how-it-works"}
+                href={~p"/discover" <> "#how-it-works"}
                 class="text-sm font-medium transition-colors hover:text-secondary"
               >How it works</a>
               <a
-                href={~p"/" <> "#our-story"}
+                href={~p"/discover" <> "#our-story"}
                 class="text-sm font-medium transition-colors hover:text-secondary"
               >Our story</a>
             <% end %>
@@ -127,7 +135,7 @@ defmodule WaziRouteWeb.Layouts do
                       <.icon name="hero-squares-2x2" class="size-5 text-secondary" /> Workspace
                     </.link>
                     <a
-                      href={~p"/"}
+                      href={~p"/discover"}
                       class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-primary transition hover:bg-base-200"
                     >
                       <.icon name="hero-globe-alt" class="size-5 text-secondary" /> Discover Wazi
@@ -168,7 +176,7 @@ defmodule WaziRouteWeb.Layouts do
 
       <main id="main-content" tabindex="-1">{render_slot(@inner_block)}</main>
 
-      <footer class="wazi-pattern text-primary-content">
+      <footer :if={@chrome} class="wazi-pattern text-primary-content">
         <div class="mx-auto grid max-w-[1440px] gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[1fr_auto] lg:px-12 lg:py-16">
           <div>
             <a
@@ -196,8 +204,8 @@ defmodule WaziRouteWeb.Layouts do
             </p>
           </div>
           <div class="flex flex-wrap items-end gap-x-8 gap-y-3 text-sm font-medium">
-            <a href={~p"/" <> "#why-wazi"} class="hover:text-accent">Why Wazi</a>
-            <a href={~p"/" <> "#how-it-works"} class="hover:text-accent">How it works</a>
+            <a href={~p"/discover" <> "#why-wazi"} class="hover:text-accent">Why Wazi</a>
+            <a href={~p"/discover" <> "#how-it-works"} class="hover:text-accent">How it works</a>
             <a href="#main-content" class="inline-flex items-center gap-2 hover:text-accent">Back to top
             <.icon name="hero-arrow-up" class="size-4" /></a>
           </div>

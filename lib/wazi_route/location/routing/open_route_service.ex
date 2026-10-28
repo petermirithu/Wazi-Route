@@ -18,7 +18,9 @@ defmodule WaziRoute.Location.Routing.OpenRouteService do
         target_count: limit,
         weight_factor: 1.4,
         share_factor: 0.6
-      }
+      },
+      instructions: true,
+      language: "en"
     }
 
     with {:ok, api_key} <- api_key(),
@@ -32,6 +34,7 @@ defmodule WaziRoute.Location.Routing.OpenRouteService do
         features
         |> Enum.with_index(1)
         |> Enum.flat_map(&parse_route/1)
+        |> Enum.uniq_by(& &1.geometry)
         |> Enum.take(limit)
 
       {:ok, routes}
@@ -71,7 +74,9 @@ defmodule WaziRoute.Location.Routing.OpenRouteService do
 
   defp parse_route(
          {%{
-            "properties" => %{"summary" => %{"distance" => distance, "duration" => duration}},
+            "properties" =>
+              %{"summary" => %{"distance" => distance, "duration" => duration}} =
+                properties,
             "geometry" => geometry
           }, index}
        )
@@ -81,12 +86,31 @@ defmodule WaziRoute.Location.Routing.OpenRouteService do
         id: "route-#{index}",
         distance_m: distance,
         duration_s: duration,
-        geometry: geometry
+        geometry: geometry,
+        via: via_roads(properties)
       }
     ]
   end
 
   defp parse_route(_feature), do: []
+
+  defp via_roads(properties) do
+    properties
+    |> Map.get("segments", [])
+    |> Enum.flat_map(&Map.get(&1, "steps", []))
+    |> Enum.map(&Map.get(&1, "name"))
+    |> Enum.filter(&(is_binary(&1) and String.trim(&1) not in ["", "-"]))
+    |> Enum.map(&String.trim/1)
+    |> Enum.uniq()
+    |> representative_roads()
+  end
+
+  defp representative_roads(roads) when length(roads) <= 3, do: roads
+
+  defp representative_roads(roads) do
+    [List.first(roads), Enum.at(roads, div(length(roads), 2)), List.last(roads)]
+    |> Enum.uniq()
+  end
 
   defp error_message(%{"error" => %{"message" => message}}) when is_binary(message), do: message
   defp error_message(%{"error" => message}) when is_binary(message), do: message

@@ -59,6 +59,22 @@ defmodule WaziRouteWeb.DashboardLive do
     {:noreply, assign(socket, :form, planner_form(params))}
   end
 
+  def handle_event("reset-search", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(
+       planner_state: :idle,
+       planner_error: nil,
+       origin: nil,
+       destination: nil,
+       route_count: 0,
+       route_options: [],
+       selected_route_id: nil
+     )
+     |> stream(:routes, [], reset: true)
+     |> push_event("route-cleared", %{})}
+  end
+
   def handle_event("select-route", %{"route-id" => route_id}, socket) do
     case Enum.find(socket.assigns.route_options, &(&1.id == route_id)) do
       nil ->
@@ -145,6 +161,12 @@ defmodule WaziRouteWeb.DashboardLive do
     do: "Route planning is temporarily unavailable. Please try again."
 
   defp format_distance(distance_m), do: "#{Float.round(distance_m / 1000, 1)} km"
+
+  defp format_via([]), do: "Direct route"
+  defp format_via(roads), do: "Via #{Enum.join(roads, " · ")}"
+
+  defp route_label("route-" <> number), do: "Route #{number}"
+  defp route_label(_id), do: "Route option"
 
   defp format_duration(duration_s) do
     minutes = duration_s |> Kernel./(60) |> Float.ceil() |> trunc()
