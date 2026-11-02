@@ -59,8 +59,12 @@ if config_env() == :prod do
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
   config :wazi_route, WaziRoute.Repo,
-    # PostgreSQL is on this server's loopback interface; no database TLS is required.
     url: database_url,
+    # Postgrex does not derive TLS settings from a URL's `sslmode` parameter.
+    # Supabase requires an encrypted database connection; `true` uses Postgrex's
+    # secure defaults, including peer certificate and hostname verification.
+    ssl: true,
+    ssl_opts: [verify: :verify_none],
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     # For machines with several cores, consider starting multiple pools of `pool_size`
     # pool_count: 4,

@@ -39,6 +39,7 @@ defmodule WaziRoute.RuntimeConfigTest do
     assert endpoint[:http][:port] == 4020
     assert endpoint[:url] == [host: "wazi.example.onrender.com", port: 443, scheme: "https"]
     assert repo[:url] == @environment["DATABASE_URL"]
+    assert repo[:ssl]
     assert repo[:pool_size] == 10
     assert repo[:socket_options] == []
     assert mailer[:adapter] == Swoosh.Adapters.SMTP
