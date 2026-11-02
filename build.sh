@@ -2,6 +2,9 @@
 set -o errexit
 
 mix deps.get --only prod
+# Leaflet is bundled from assets/node_modules by esbuild and Tailwind, so its
+# locked npm dependencies must be installed before compiling production assets.
+npm ci --prefix assets
 MIX_ENV=prod mix compile
 
 MIX_ENV=prod mix assets.build
