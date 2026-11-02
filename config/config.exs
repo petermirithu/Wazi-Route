@@ -58,6 +58,11 @@ config :phoenix_live_view,
 config :wazi_route, WaziRoute.Mailer, adapter: Swoosh.Adapters.Local
 config :wazi_route, :mail_from, {"Wazi Route", "noreply@wazi-route.local"}
 
+config :wazi_route, :mailgun,
+  base_url: "https://api.mailgun.net",
+  domain: "example.mailgun.org",
+  api_key: "test-api-key"
+
 # Configure esbuild (the version is required)
 config :esbuild,
   version: "0.25.4",

@@ -13,12 +13,12 @@ defmodule WaziRoute.RuntimeConfigTest do
     "POOL_SIZE" => nil,
     "ECTO_IPV6" => nil,
     "DNS_CLUSTER_QUERY" => nil,
-    "SMTP_RELAY" => "smtp.example.org",
-    "SMTP_PORT" => nil,
-    "SMTP_USERNAME" => "smtp-user",
-    "SMTP_PASSWORD" => "smtp-password",
-    "SMTP_FROM_EMAIL" => "hello@example.org",
-    "SMTP_FROM_NAME" => "Wazi Route"
+    "MAILGUN_BASE_URL" => "https://api.mailgun.net",
+    "MAILGUN_DOMAIN" => "mg.example.org",
+    "MAILGUN_API_KEY" => "mailgun-test-key",
+    "MAIL_FROM_EMAIL" => "hello@example.org",
+    "MAILGUN_FROM_EMAIL" => nil,
+    "MAIL_FROM_NAME" => "Wazi Route"
   }
 
   setup do
@@ -32,7 +32,7 @@ defmodule WaziRoute.RuntimeConfigTest do
     config = read_config()
     endpoint = config[:wazi_route][WaziRouteWeb.Endpoint]
     repo = config[:wazi_route][WaziRoute.Repo]
-    mailer = config[:wazi_route][WaziRoute.Mailer]
+    mailgun = config[:wazi_route][:mailgun]
 
     assert endpoint[:server]
     assert endpoint[:http][:ip] == {0, 0, 0, 0}
@@ -42,12 +42,9 @@ defmodule WaziRoute.RuntimeConfigTest do
     assert repo[:ssl]
     assert repo[:pool_size] == 10
     assert repo[:socket_options] == []
-    assert mailer[:adapter] == Swoosh.Adapters.SMTP
-    assert mailer[:relay] == "smtp.example.org"
-    assert mailer[:port] == 587
-    assert mailer[:username] == "smtp-user"
-    assert mailer[:password] == "smtp-password"
-    assert mailer[:tls] == :always
+    assert mailgun[:base_url] == "https://api.mailgun.net"
+    assert mailgun[:domain] == "mg.example.org"
+    assert mailgun[:api_key] == "mailgun-test-key"
     assert config[:wazi_route][:mail_from] == {"Wazi Route", "hello@example.org"}
   end
 
@@ -80,9 +77,24 @@ defmodule WaziRoute.RuntimeConfigTest do
     assert endpoint[:url] == [host: "wazi.example.org", port: 443, scheme: "https"]
   end
 
+  test "uses exported Mailgun settings in development" do
+    System.delete_env("MAIL_FROM_EMAIL")
+    System.put_env("MAILGUN_FROM_EMAIL", "dev-sender@example.org")
+
+    config = Config.Reader.read!(@runtime, env: :dev, target: :host)
+
+    assert config[:wazi_route][:mailgun] == [
+             base_url: "https://api.mailgun.net",
+             domain: "mg.example.org",
+             api_key: "mailgun-test-key"
+           ]
+
+    assert config[:wazi_route][:mail_from] == {"Wazi Route", "dev-sender@example.org"}
+  end
+
   test "fails early when required production environment is missing" do
     for key <-
-          ~w(DATABASE_URL SECRET_KEY_BASE SMTP_RELAY SMTP_USERNAME SMTP_PASSWORD SMTP_FROM_EMAIL) do
+          ~w(DATABASE_URL SECRET_KEY_BASE MAILGUN_BASE_URL MAILGUN_DOMAIN MAILGUN_API_KEY) do
       System.delete_env(key)
 
       assert_raise RuntimeError, ~r/environment variable #{key} is missing/, fn ->

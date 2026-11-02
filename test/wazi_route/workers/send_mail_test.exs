@@ -2,24 +2,24 @@ defmodule WaziRoute.Workers.SendMailTest do
   use WaziRoute.DataCase, async: true
 
   use Oban.Testing, repo: WaziRoute.Repo
-  import Swoosh.TestAssertions
-
   alias WaziRoute.Workers.SendMail
 
-  test "delivers text and HTML email bodies" do
-    assert :ok =
-             perform_job(SendMail, %{
-               recipient: "driver@example.com",
-               subject: "Your Wazi code",
-               text_body: "Code: 123456",
-               html_body: "<strong>123456</strong>"
-             })
+  test "builds a Mailgun HTTP request with text and HTML bodies" do
+    args =
+      SendMail.mailgun_curl_args(
+        "driver@example.com",
+        "Your Wazi code",
+        "Code: 123456",
+        "<strong>123456</strong>"
+      )
 
-    assert_email_sent(fn email ->
-      assert email.to == [{"", "driver@example.com"}]
-      assert email.subject == "Your Wazi code"
-      assert email.text_body == "Code: 123456"
-      assert email.html_body == "<strong>123456</strong>"
-    end)
+    assert "--user" in args
+    assert "api:test-api-key" in args
+    assert "--form-string" in args
+    assert "to=driver@example.com" in args
+    assert "subject=Your Wazi code" in args
+    assert "text=Code: 123456" in args
+    assert "html=<strong>123456</strong>" in args
+    assert List.last(args) == "https://api.mailgun.net/v3/example.mailgun.org/messages"
   end
 end

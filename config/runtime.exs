@@ -46,6 +46,32 @@ if config_env() == :dev do
     ]
 
   config :swoosh, :api_client, true
+
+  case {
+    System.get_env("MAILGUN_BASE_URL"),
+    System.get_env("MAILGUN_DOMAIN"),
+    System.get_env("MAILGUN_API_KEY")
+  } do
+    {mailgun_base_url, mailgun_domain, mailgun_api_key}
+    when is_binary(mailgun_base_url) and is_binary(mailgun_domain) and is_binary(mailgun_api_key) ->
+      mail_from_email =
+        System.get_env("MAIL_FROM_EMAIL") ||
+          System.get_env("MAILGUN_FROM_EMAIL") ||
+          "postmaster@#{mailgun_domain}"
+
+      config :wazi_route,
+             :mailgun,
+             base_url: mailgun_base_url,
+             domain: mailgun_domain,
+             api_key: mailgun_api_key
+
+      config :wazi_route,
+             :mail_from,
+             {System.get_env("MAIL_FROM_NAME", "Wazi Route"), mail_from_email}
+
+    _ ->
+      :ok
+  end
 end
 
 if config_env() == :prod do
@@ -108,47 +134,29 @@ if config_env() == :prod do
     http: [ip: bind_ip],
     secret_key_base: secret_key_base
 
-  config :swoosh, :api_client, false
+  mailgun_base_url =
+    System.get_env("MAILGUN_BASE_URL") || raise "environment variable MAILGUN_BASE_URL is missing"
 
-  smtp_relay =
-    System.get_env("SMTP_RELAY") ||
-      raise "environment variable SMTP_RELAY is missing"
+  mailgun_domain =
+    System.get_env("MAILGUN_DOMAIN") || raise "environment variable MAILGUN_DOMAIN is missing"
 
-  smtp_username =
-    System.get_env("SMTP_USERNAME") ||
-      raise "environment variable SMTP_USERNAME is missing"
+  mailgun_api_key =
+    System.get_env("MAILGUN_API_KEY") || raise "environment variable MAILGUN_API_KEY is missing"
 
-  smtp_password =
-    System.get_env("SMTP_PASSWORD") ||
-      raise "environment variable SMTP_PASSWORD is missing"
+  config :wazi_route,
+         :mailgun,
+         base_url: mailgun_base_url,
+         domain: mailgun_domain,
+         api_key: mailgun_api_key
 
-  from_email =
-    System.get_env("SMTP_FROM_EMAIL") ||
-      raise "environment variable SMTP_FROM_EMAIL is missing"
-
-  smtp_port = String.to_integer(System.get_env("SMTP_PORT", "587"))
-
-  config :wazi_route, :mail_from, {System.get_env("SMTP_FROM_NAME", "Wazi Route"), from_email}
-
-  config :wazi_route, WaziRoute.Mailer,
-    adapter: Swoosh.Adapters.SMTP,
-    relay: smtp_relay,
-    username: smtp_username,
-    password: smtp_password,
-    port: smtp_port,
-    auth: :always,
-    ssl: false,
-    tls: :always,
-    tls_options: [
-      versions: [:"tlsv1.2", :"tlsv1.3"],
-      verify: :verify_peer,
-      cacerts: :public_key.cacerts_get(),
-      server_name_indication: String.to_charlist(smtp_relay),
-      depth: 4,
-      customize_hostname_check: [
-        match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
-      ]
-    ]
+  config :wazi_route,
+         :mail_from,
+         {
+           System.get_env("MAIL_FROM_NAME", "Wazi Route"),
+           System.get_env("MAIL_FROM_EMAIL") ||
+             System.get_env("MAILGUN_FROM_EMAIL") ||
+             "postmaster@#{mailgun_domain}"
+         }
 
   # ## SSL Support
   #
