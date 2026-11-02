@@ -101,18 +101,38 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    max-height: 55dvh;
+    max-height: 65dvh;
     border-radius: 1.75rem 1.75rem 0 0;
-    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    min-width: 0;
     scrollbar-width: thin;
     scrollbar-color: #e9ad45 transparent;
   }
 
   .wazi-planner-sheet[data-state="ready"] {
-    max-height: 48dvh;
+    max-height: 55dvh;
+  }
+
+  .wazi-planner-sheet #planner-content {
+    scrollbar-width: thin;
+    scrollbar-color: #e9ad45 transparent;
+  }
+
+  .wazi-planner-sheet input {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 1rem;
   }
 
   @media (width < 48rem) {
+    .wazi-planner-sheet[data-collapsed="true"] #planner-content {
+      display: none;
+    }
+
+    .wazi-planner-sheet #planner-results > div:first-of-type {
+      margin-top: 0.5rem;
+    }
+
     .wazi-planner-sheet #planner-title {
       font-size: 1.25rem;
     }
@@ -129,24 +149,6 @@
       margin-top: -0.5rem;
     }
 
-    .wazi-planner-sheet #candidate-routes button {
-      padding: 0.875rem;
-    }
-
-    .wazi-planner-sheet #candidate-routes dl {
-      margin-top: 0.75rem;
-      padding-top: 0.75rem;
-    }
-
-    .wazi-planner-sheet #candidate-routes dl > div {
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-    }
-
-    .wazi-planner-sheet #candidate-routes dd {
-      margin-top: 0;
-    }
   }
 
   @media (width >= 48rem) {

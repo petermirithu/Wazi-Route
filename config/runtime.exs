@@ -78,11 +78,18 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
+  # Render provides the public `onrender.com` hostname at runtime. `PHX_HOST`
+  # remains available for a custom domain, which should take precedence once it
+  # is configured in the Render dashboard.
   host =
     System.get_env("PHX_HOST") ||
-      raise "environment variable PHX_HOST is missing. Set it to the public domain without https://."
+      System.get_env("RENDER_EXTERNAL_HOSTNAME") ||
+      "localhost"
 
-  bind_address = System.get_env("PHX_IP", "127.0.0.1")
+  # Render sends traffic directly to the port exposed by the service, so Phoenix
+  # must listen on all interfaces. A local reverse-proxy deployment can still
+  # supply PHX_IP=127.0.0.1 explicitly.
+  bind_address = System.get_env("PHX_IP", "0.0.0.0")
 
   bind_ip =
     case :inet.parse_address(String.to_charlist(bind_address)) do
@@ -94,10 +101,7 @@ if config_env() == :prod do
 
   config :wazi_route, WaziRouteWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
-    http: [
-      # Only the same-server HTTPS proxy should reach Phoenix directly.
-      ip: bind_ip
-    ],
+    http: [ip: bind_ip],
     secret_key_base: secret_key_base
 
   config :swoosh, :api_client, false

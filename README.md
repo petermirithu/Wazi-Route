@@ -50,4 +50,8 @@ Built with Elixir, Phoenix LiveView, and PostgreSQL.
 
 6. Open [localhost:4000](http://localhost:4000) in your browser. Signed-in users are redirected to `/dashboard`; visitors are redirected to the public `/discover` page, which remains accessible after login.
 
-The dashboard keeps the map fullscreen, with a floating side panel on desktop and a scrollable bottom sheet on mobile. Selecting a route fits it into the unobstructed map area; **Search again** returns to the populated form.
+The dashboard keeps the map fullscreen, with a floating side panel on desktop and a collapsible bottom sheet on mobile. All available routes appear together; the selected route is brighter and drawn above the alternatives. On mobile, switch routes using tabs (or arrow keys) and tap **Show map** or swipe the sheet handle down to reveal the map. Tap **Show details** or swipe up to reopen it. Map fitting accounts for the sheet, and **Search again** returns to the populated form.
+
+## Deploy on Render
+
+Follow the [Render deployment guide](deployment.md) to create the web service and PostgreSQL database, configure its required secrets, run migrations before deploys, and verify the live application.

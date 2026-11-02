@@ -1,51 +1,44 @@
-# Production on a single server
+# Deploy on Render
 
-The production runtime assumes PostgreSQL and an HTTPS reverse proxy (Nginx or Caddy) on the same server. `config/prod.exs` retains compile-time asset/SSL settings; `config/runtime.exs` reads deployment values from the environment. Phoenix listens on `127.0.0.1:4020` by default, while its public URL uses HTTPS on port 443. `PHX_HOST` is required. `PHX_IP` can override the bind address; keep loopback when trusting forwarded headers from a local proxy.
+This application is configured for a Render web service backed by Render PostgreSQL. The release listens on Render's `PORT` across all interfaces, uses the `RENDER_EXTERNAL_HOSTNAME` provided by Render for its public URL, and honors `PHX_HOST` when a custom domain is configured.
 
-1. Create a dedicated PostgreSQL login and a database owned by that login, for example `wazi_route` and `wazi_route_prod`. Do not use the PostgreSQL superuser for the app. Keep PostgreSQL accessible only locally and configure password authentication for this login. The local database connection does not require TLS.
-2. Copy the environment template and restrict access:
+## Create the services
 
-   ```sh
-   cp .env.production.example .env.production
-   chmod 600 .env.production
-   mix phx.gen.secret
-   ```
+1. Push the repository to a Git provider that Render can access.
+2. In Render, create a PostgreSQL database in the same region as the application. Keep it private and use its internal connection string for the app's `DATABASE_URL`.
+3. Create a **Web Service** for this repository with these settings:
 
-   Edit `.env.production`: set `PHX_HOST` to your real domain (no scheme or path), replace the database password and secret placeholders. URL-encode special characters in database credentials. Keep the secret stable across restarts and never commit the completed file. `POOL_SIZE` defaults to 10 connections per app instance. `PHX_SERVER=true` enables the web server; omit it when running database maintenance commands.
+   | Setting | Value |
+   | --- | --- |
+   | Language | `Elixir` |
+   | Build Command | `./build.sh` |
+   | Pre-Deploy Command | `_build/prod/rel/wazi_route/bin/migrate` |
+   | Start Command | `_build/prod/rel/wazi_route/bin/server` |
 
-3. Build and migrate on the server from a shell with the deployment environment exported. Phoenix **does not automatically load dotenv files**. Only source a file you control:
+   The pre-deploy command runs the release migration script before a new version starts. It is safe to run repeatedly because Ecto tracks applied migrations.
 
-   ```sh
-   set -a
-   . ./.env.production
-   set +a
-   mix deps.get --only prod
-   mix compile
-   mix assets.deploy
-   env -u PHX_SERVER mix ecto.migrate
-   mix release
-   _build/prod/rel/wazi_route/bin/wazi_route start
-   ```
+## Configure environment variables
 
-   This assumes the database already exists. Back up existing production data before migrations. Use systemd or your server's process manager for persistent operation; configure it to supply the same environment and run the release as an unprivileged user. A release does not include Mix: the migration command above runs from the source checkout before starting the release.
+Set these in the Render dashboard. Do not add their values to the repository.
 
-4. Point the domain's DNS at the server and terminate HTTPS at the reverse proxy. For Caddy, replace the example domain in this site block:
+| Variable | Value |
+| --- | --- |
+| `DATABASE_URL` | The internal PostgreSQL connection string from the Render database |
+| `SECRET_KEY_BASE` | A stable secret from `mix phx.gen.secret` |
+| `SMTP_RELAY` | Your SMTP host |
+| `SMTP_PORT` | Optional; defaults to `587` |
+| `SMTP_USERNAME` | SMTP account username |
+| `SMTP_PASSWORD` | SMTP account password |
+| `SMTP_FROM_EMAIL` | Sender email address |
+| `SMTP_FROM_NAME` | Optional; defaults to `Wazi Route` |
+| `GEOAPIFY_API_KEY` | Geoapify API key for location search |
+| `OPENROUTESERVICE_API_KEY` | OpenRouteService API key for routing |
+| `POOL_SIZE` | Optional; defaults to `10` |
 
-   ```caddyfile
-   app.your-domain.com {
-       reverse_proxy 127.0.0.1:4020
-   }
-   ```
+Render automatically supplies `PORT` and `RENDER_EXTERNAL_HOSTNAME`; do not set them yourself. After adding a custom domain to the web service, set `PHX_HOST` to that domain without `https://` or a path.
 
-   Caddy handles WebSocket upgrades and forwarded headers. With Nginx, preserve `Host`, set `X-Forwarded-Proto` from the actual connection scheme, and enable WebSocket upgrades for LiveView. Only expose ports 80/443 for web traffic, not Phoenix's port or PostgreSQL. Working DNS and certificate issuance are required for HTTPS and phone PWA installation.
+Deploy the service. Render terminates TLS and Phoenix trusts Render's forwarded HTTPS protocol, so LiveView WebSocket connections and secure redirects work through the public URL.
 
-5. Check the public HTTPS home page, `/manifest.json`, and `/sw.js`, then test the install controls. These files should return HTTP 200 through the proxy. Email delivery still needs a production mail adapter before any email-dependent features are introduced.
+## Verify a deployment
 
-To start your Phoenix server locally:
-
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
-
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
-
-Ready to run in production? Please [check our deployment guides](https://phoenix.hexdocs.pm/deployment.html).
+After Render marks the deploy live, check the application home page, `/manifest.json`, and `/sw.js`. Confirm a signed-in user can load the dashboard and a route search completes, which verifies both the database and the two mapping API credentials.

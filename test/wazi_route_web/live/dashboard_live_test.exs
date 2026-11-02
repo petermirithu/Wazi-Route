@@ -47,6 +47,18 @@ defmodule WaziRouteWeb.DashboardLiveTest do
 
     render_async(view)
 
+    assert_push_event(view, "routes-found", %{
+      selected_id: "route-1",
+      routes: [
+        %{id: "route-1", geometry: %{}},
+        %{id: "route-2", geometry: %{}},
+        %{id: "route-3", geometry: %{}}
+      ]
+    })
+
+    assert has_element?(view, "#route-tabs[role='tablist']")
+    assert has_element?(view, "#tab-route_tabs-route-1[aria-selected='true']")
+    assert has_element?(view, "#selected-route-details[aria-labelledby='tab-route_tabs-route-1']")
     assert has_element?(view, "#planner-results")
     assert has_element?(view, "#planner-panel[data-state='ready']")
     refute has_element?(view, "#journey-form")
@@ -62,6 +74,14 @@ defmodule WaziRouteWeb.DashboardLiveTest do
     |> render_click()
 
     assert view |> element("#routes-route-2") |> render() =~ ~s(aria-pressed="true")
+    assert_push_event(view, "route-selected", %{id: "route-2"})
+    assert has_element?(view, "#tab-route_tabs-route-2[aria-selected='true']")
+    assert has_element?(view, "#tab-route_tabs-route-1[aria-selected='false']")
+    assert has_element?(view, "#selected-route-details", "Via Red Hill Link Road")
+
+    view |> element("#tab-route_tabs-route-3") |> render_click()
+    assert_push_event(view, "route-selected", %{id: "route-3"})
+    assert has_element?(view, "#routes-route-3[aria-pressed='true']")
 
     view
     |> element("#back-to-search")
@@ -71,6 +91,24 @@ defmodule WaziRouteWeb.DashboardLiveTest do
     assert has_element?(view, "#journey_form_starting_point[value='Ruaka, Nairobi']")
     assert has_element?(view, "#journey_form_destination_point[value='Loresho, Nairobi']")
     refute has_element?(view, "#planner-results")
+  end
+
+  test "the mobile sheet can collapse and reopen without losing the form", %{conn: conn} do
+    {:ok, view, _} = conn |> log_in_user(user_fixture()) |> live(~p"/dashboard")
+
+    view
+    |> form("#journey-form",
+      journey_form: %{starting_point: "Ruaka", destination_point: "Loresho"}
+    )
+    |> render_change()
+
+    view |> element("#sheet-toggle") |> render_click()
+    assert has_element?(view, "#planner-panel[data-collapsed='true']")
+    assert has_element?(view, "#sheet-toggle[aria-expanded='false']")
+    render_hook(view, "set-sheet", %{collapsed: false})
+    assert has_element?(view, "#planner-panel[data-collapsed='false']")
+    assert has_element?(view, "#journey_form_starting_point[value='Ruaka']")
+    assert has_element?(view, "#journey_form_destination_point[value='Loresho']")
   end
 
   test "shows a useful error when a location cannot be found", %{conn: conn} do

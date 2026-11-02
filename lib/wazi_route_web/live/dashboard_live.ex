@@ -15,9 +15,12 @@ defmodule WaziRouteWeb.DashboardLive do
        destination: nil,
        route_count: 0,
        route_options: [],
-       selected_route_id: nil
+       selected_route_id: nil,
+       selected_route: nil,
+       sheet_collapsed: false
      )
-     |> stream(:routes, [])}
+     |> stream(:routes, [])
+     |> stream(:route_tabs, [])}
   end
 
   @impl true
@@ -45,9 +48,13 @@ defmodule WaziRouteWeb.DashboardLive do
          destination: nil,
          route_count: 0,
          route_options: [],
-         selected_route_id: nil
+         selected_route_id: nil,
+         selected_route: nil,
+         sheet_collapsed: false
        )
        |> stream(:routes, [], reset: true)
+       |> stream(:route_tabs, [], reset: true)
+       |> push_event("route-cleared", %{})
        |> start_async(:plan_routes, fn ->
          Location.plan_routes(current_scope, origin, destination)
        end)}
@@ -57,6 +64,14 @@ defmodule WaziRouteWeb.DashboardLive do
   @impl true
   def handle_event("validate", %{"journey_form" => params}, socket) do
     {:noreply, assign(socket, :form, planner_form(params))}
+  end
+
+  def handle_event("toggle-sheet", _params, socket) do
+    {:noreply, assign(socket, :sheet_collapsed, !socket.assigns.sheet_collapsed)}
+  end
+
+  def handle_event("set-sheet", %{"collapsed" => collapsed}, socket) do
+    {:noreply, assign(socket, :sheet_collapsed, collapsed == true)}
   end
 
   def handle_event("reset-search", _params, socket) do
@@ -69,9 +84,12 @@ defmodule WaziRouteWeb.DashboardLive do
        destination: nil,
        route_count: 0,
        route_options: [],
-       selected_route_id: nil
+       selected_route_id: nil,
+       selected_route: nil,
+       sheet_collapsed: false
      )
      |> stream(:routes, [], reset: true)
+     |> stream(:route_tabs, [], reset: true)
      |> push_event("route-cleared", %{})}
   end
 
@@ -83,12 +101,10 @@ defmodule WaziRouteWeb.DashboardLive do
       route ->
         {:noreply,
          socket
-         |> assign(:selected_route_id, route.id)
+         |> assign(selected_route_id: route.id, selected_route: route)
          |> stream(:routes, socket.assigns.route_options, reset: true)
-         |> push_event(
-           "route-selected",
-           route_payload(route, socket.assigns.origin, socket.assigns.destination)
-         )}
+         |> stream(:route_tabs, socket.assigns.route_options, reset: true)
+         |> push_event("route-selected", %{id: route.id})}
     end
   end
 
@@ -105,13 +121,18 @@ defmodule WaziRouteWeb.DashboardLive do
        destination: result.destination,
        route_count: length(result.routes),
        route_options: result.routes,
-       selected_route_id: selected_route.id
+       selected_route_id: selected_route.id,
+       selected_route: selected_route,
+       sheet_collapsed: false
      )
      |> stream(:routes, result.routes, reset: true)
-     |> push_event(
-       "route-selected",
-       route_payload(selected_route, result.origin, result.destination)
-     )}
+     |> stream(:route_tabs, result.routes, reset: true)
+     |> push_event("routes-found", %{
+       routes: Enum.map(result.routes, &%{id: &1.id, geometry: &1.geometry}),
+       selected_id: selected_route.id,
+       origin: [result.origin.latitude, result.origin.longitude],
+       destination: [result.destination.latitude, result.destination.longitude]
+     })}
   end
 
   def handle_async(:plan_routes, {:ok, {:error, reason}}, socket) do
@@ -134,15 +155,6 @@ defmodule WaziRouteWeb.DashboardLive do
 
   defp planner_form(params \\ %{"starting_point" => "", "destination_point" => ""}) do
     to_form(params, as: :journey_form)
-  end
-
-  defp route_payload(route, origin, destination) do
-    %{
-      id: route.id,
-      geometry: route.geometry,
-      origin: [origin.latitude, origin.longitude],
-      destination: [destination.latitude, destination.longitude]
-    }
   end
 
   defp error_message(:missing_api_key),

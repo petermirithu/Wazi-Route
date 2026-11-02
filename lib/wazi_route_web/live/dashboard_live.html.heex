@@ -75,191 +75,272 @@
           id="planner-panel"
           phx-hook="PlannerPanel"
           data-state={@planner_state}
-          class="wazi-planner-sheet absolute z-[600] overflow-y-auto overscroll-contain border border-primary-content/10 bg-primary/95 p-4 text-primary-content shadow-2xl backdrop-blur-xl md:p-5"
+          data-collapsed={to_string(@sheet_collapsed)}
+          class="wazi-planner-sheet absolute z-[600] flex flex-col overflow-hidden border border-primary-content/10 bg-primary/95 text-primary-content shadow-2xl backdrop-blur-xl"
           aria-labelledby="planner-title"
         >
-          <div
-            class="absolute -right-16 -top-16 size-64 rounded-full border-[44px] border-accent/10"
-            aria-hidden="true"
+          <button
+            id="sheet-toggle"
+            type="button"
+            phx-click="toggle-sheet"
+            aria-expanded={to_string(!@sheet_collapsed)}
+            aria-controls="planner-content"
+            class="relative flex min-h-12 w-full shrink-0 touch-none items-center justify-between gap-3 px-5 text-xs font-semibold text-primary-content/80 md:hidden"
           >
-          </div>
-          <div class="relative">
-            <div :if={@planner_state != :ready} class="flex items-start justify-between gap-5">
-              <div>
-                <p class="text-xs font-bold uppercase tracking-[0.1em] text-accent">
-                  Plan a drive
-                </p>
-                <h2 id="planner-title" class="mt-2 text-2xl font-bold sm:text-3xl">
-                  Where are you headed?
-                </h2>
+            <span>{if(@planner_state == :ready, do: "Route options", else: "Plan a drive")}</span>
+            <span
+              class="absolute top-2 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full bg-primary-content/30"
+              aria-hidden="true"
+            ></span>
+            <span class="flex items-center gap-2">
+              {if(@sheet_collapsed, do: "Show details", else: "Show map")}
+              <.icon
+                name={if(@sheet_collapsed, do: "hero-chevron-up", else: "hero-chevron-down")}
+                class="size-4"
+              />
+            </span>
+          </button>
+          <div
+            id="planner-content"
+            class="relative min-h-0 overflow-x-hidden overflow-y-auto overscroll-contain p-4 md:p-5"
+          >
+            <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+              <div class="absolute -right-16 -top-16 size-64 rounded-full border-[44px] border-accent/10">
               </div>
-              <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-base-100/10"><.icon
-                name="hero-map-pin"
-                class="size-6 text-accent"
-              /></span>
             </div>
-
-            <.form
-              :if={@planner_state != :ready}
-              for={@form}
-              id="journey-form"
-              class="mt-6"
-              phx-submit="submit"
-              phx-change="validate"
-            >
-              <div class="grid gap-4">
+            <div class="relative min-w-0">
+              <div :if={@planner_state != :ready} class="flex items-start justify-between gap-5">
                 <div>
-                  <label
-                    for="journey_form_starting_point"
-                    class="mb-1.5 block text-xs font-semibold text-primary-content/75"
-                  >Starting point</label>
-                  <.input
-                    field={@form[:starting_point]}
-                    type="text"
-                    autocomplete="off"
-                    placeholder="e.g. Ruaka, Nairobi"
-                    spellcheck="false"
-                    required
-                  />
-                </div>
-                <div>
-                  <label
-                    for="journey_form_destination_point"
-                    class="mb-1.5 block text-xs font-semibold text-primary-content/75"
-                  >Destination</label>
-                  <.input
-                    field={@form[:destination_point]}
-                    type="text"
-                    autocomplete="off"
-                    placeholder="e.g. Loresho, Nairobi"
-                    spellcheck="false"
-                    required
-                  />
-                </div>
-              </div>
-
-              <.button
-                id="plan-route-button"
-                disabled={@planner_state == :loading}
-                phx-disable-with="Finding routes…"
-                class="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-secondary px-5 font-bold text-secondary-content shadow-[4px_4px_0_#e9ad45] transition hover:-translate-y-0.5 hover:bg-base-100 hover:text-primary disabled:cursor-wait disabled:opacity-70 motion-reduce:transform-none"
-              >
-                Find routes <.icon name="hero-arrow-right" class="size-5" />
-              </.button>
-            </.form>
-
-            <div class="mt-5 border-t border-primary-content/15 pt-5">
-              <div
-                :if={@planner_state == :idle}
-                id="planner-idle"
-                class="flex items-center gap-3 text-xs leading-6 text-primary-content/55"
-              >
-                <.icon name="hero-sparkles" class="size-5 shrink-0 text-accent" />
-                Enter two places to compare up to three possible driving routes.
-              </div>
-
-              <div
-                :if={@planner_state == :loading}
-                id="planner-loading"
-                role="status"
-                class="flex items-center gap-3 rounded-xl border border-primary-content/15 bg-base-100/5 p-5 text-sm font-semibold"
-              >
-                <.icon name="hero-arrow-path" class="size-5 animate-spin text-accent" />
-                Looking across the road network…
-              </div>
-
-              <div
-                :if={@planner_state == :error}
-                id="planner-error"
-                role="alert"
-                class="flex items-start gap-3 rounded-xl border border-error/40 bg-error/15 p-5 text-sm leading-6"
-              >
-                <.icon
-                  name="hero-exclamation-triangle"
-                  class="mt-0.5 size-5 shrink-0 text-accent"
-                />
-                <p>{@planner_error}</p>
-              </div>
-
-              <div :if={@planner_state == :ready} id="planner-results">
-                <button
-                  id="back-to-search"
-                  type="button"
-                  phx-click="reset-search"
-                  class="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-semibold text-primary-content/75 transition hover:bg-base-100/10 hover:text-primary-content"
-                >
-                  <.icon name="hero-arrow-left" class="size-4" /> Search again
-                </button>
-
-                <div class="mt-4">
                   <p class="text-xs font-bold uppercase tracking-[0.1em] text-accent">
-                    {@route_count} {if(@route_count == 1, do: "route", else: "distinct routes")}
+                    Plan a drive
                   </p>
-                  <h2 id="planner-title" class="mt-2 text-2xl font-bold">Choose your way</h2>
-                  <p class="mt-2 line-clamp-2 text-xs leading-5 text-primary-content/60">
-                    {@origin.label} <span class="mx-1 text-accent">→</span> {@destination.label}
-                  </p>
+                  <h2 id="planner-title" class="mt-2 text-2xl font-bold sm:text-3xl">
+                    Where are you headed?
+                  </h2>
+                </div>
+                <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-base-100/10"><.icon
+                  name="hero-map-pin"
+                  class="size-6 text-accent"
+                /></span>
+              </div>
+
+              <.form
+                :if={@planner_state != :ready}
+                for={@form}
+                id="journey-form"
+                class="mt-6"
+                phx-submit="submit"
+                phx-change="validate"
+              >
+                <div class="grid gap-4">
+                  <div>
+                    <label
+                      for="journey_form_starting_point"
+                      class="mb-1.5 block text-xs font-semibold text-primary-content/75"
+                    >Starting point</label>
+                    <.input
+                      field={@form[:starting_point]}
+                      type="text"
+                      autocomplete="off"
+                      placeholder="e.g. Ruaka, Nairobi"
+                      spellcheck="false"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label
+                      for="journey_form_destination_point"
+                      class="mb-1.5 block text-xs font-semibold text-primary-content/75"
+                    >Destination</label>
+                    <.input
+                      field={@form[:destination_point]}
+                      type="text"
+                      autocomplete="off"
+                      placeholder="e.g. Loresho, Nairobi"
+                      spellcheck="false"
+                      required
+                    />
+                  </div>
                 </div>
 
-                <div id="candidate-routes" phx-update="stream" class="mt-5 grid gap-3">
+                <.button
+                  id="plan-route-button"
+                  disabled={@planner_state == :loading}
+                  phx-disable-with="Finding routes…"
+                  class="mt-3 inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-secondary px-5 font-bold text-secondary-content shadow-[4px_4px_0_#e9ad45] transition hover:-translate-y-0.5 hover:bg-base-100 hover:text-primary disabled:cursor-wait disabled:opacity-70 motion-reduce:transform-none"
+                >
+                  Find routes <.icon name="hero-arrow-right" class="size-5" />
+                </.button>
+              </.form>
+
+              <div class="mt-5 border-t border-primary-content/15 pt-5">
+                <div
+                  :if={@planner_state == :idle}
+                  id="planner-idle"
+                  class="flex items-center gap-3 text-xs leading-6 text-primary-content/55"
+                >
+                  <.icon name="hero-sparkles" class="size-5 shrink-0 text-accent" />
+                  Enter two places to compare up to three possible driving routes.
+                </div>
+
+                <div
+                  :if={@planner_state == :loading}
+                  id="planner-loading"
+                  role="status"
+                  class="flex items-center gap-3 rounded-xl border border-primary-content/15 bg-base-100/5 p-5 text-sm font-semibold"
+                >
+                  <.icon name="hero-arrow-path" class="size-5 animate-spin text-accent" />
+                  Looking across the road network…
+                </div>
+
+                <div
+                  :if={@planner_state == :error}
+                  id="planner-error"
+                  role="alert"
+                  class="flex items-start gap-3 rounded-xl border border-error/40 bg-error/15 p-5 text-sm leading-6"
+                >
+                  <.icon
+                    name="hero-exclamation-triangle"
+                    class="mt-0.5 size-5 shrink-0 text-accent"
+                  />
+                  <p>{@planner_error}</p>
+                </div>
+
+                <div :if={@planner_state == :ready} id="planner-results">
                   <button
-                    :for={{id, route} <- @streams.routes}
-                    id={id}
+                    id="back-to-search"
                     type="button"
-                    phx-click="select-route"
-                    phx-value-route-id={route.id}
-                    aria-pressed={to_string(route.id == @selected_route_id)}
-                    class={[
-                      "group w-full rounded-xl border p-4 text-left text-base-content transition hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none",
-                      if(route.id == @selected_route_id,
-                        do: "border-accent bg-base-100 shadow-[0_0_0_2px_#e9ad45]",
-                        else: "border-transparent bg-base-100/90"
-                      )
-                    ]}
+                    phx-click="reset-search"
+                    class="inline-flex min-h-10 items-center gap-2 rounded-xl px-2 text-sm font-semibold text-primary-content/75 transition hover:bg-base-100/10 hover:text-primary-content"
                   >
-                    <div class="flex items-center justify-between gap-4">
-                      <div class="flex items-center gap-4">
-                        <span class={[
-                          "flex size-10 shrink-0 items-center justify-center rounded-full transition",
-                          if(route.id == @selected_route_id,
-                            do: "bg-secondary text-secondary-content",
-                            else: "bg-accent/25 text-secondary"
-                          )
-                        ]}>
-                          <.icon name="hero-map" class="size-5" />
-                        </span>
-                        <div class="min-w-0">
-                          <h3 class="font-bold text-primary">{route_label(route.id)}</h3>
-                          <p class="mt-1 line-clamp-2 text-xs leading-5 text-base-content/60">
-                            {format_via(route.via)}
-                          </p>
-                        </div>
-                      </div>
-                      <.icon
-                        :if={route.id == @selected_route_id}
-                        name="hero-check-circle"
-                        class="size-5 shrink-0 text-secondary"
-                      />
-                    </div>
-                    <dl class="mt-4 grid grid-cols-2 gap-4 border-t border-base-300 pt-4">
-                      <div>
-                        <dt class="text-[10px] uppercase tracking-wide text-base-content/45">
-                          Distance
-                        </dt>
-                        <dd class="mt-1 text-sm font-bold text-primary">
-                          {format_distance(route.distance_m)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt class="text-[10px] uppercase tracking-wide text-base-content/45">
-                          Time
-                        </dt>
-                        <dd class="mt-1 text-sm font-bold text-primary">
-                          {format_duration(route.duration_s)}
-                        </dd>
-                      </div>
-                    </dl>
+                    <.icon name="hero-arrow-left" class="size-4" /> Search again
                   </button>
+
+                  <div class="mt-4">
+                    <p class="text-xs font-bold uppercase tracking-[0.1em] text-accent">
+                      {@route_count} {if(@route_count == 1, do: "route", else: "distinct routes")}
+                    </p>
+                    <h2 id="planner-title" class="mt-2 text-2xl font-bold">Choose your way</h2>
+                    <p class="mt-2 line-clamp-2 text-xs leading-5 text-primary-content/60">
+                      {@origin.label} <span class="mx-1 text-accent">→</span> {@destination.label}
+                    </p>
+                  </div>
+
+                  <div class="mt-4 md:hidden">
+                    <div
+                      id="route-tabs"
+                      phx-update="stream"
+                      role="tablist"
+                      aria-label="Driving routes"
+                      class="grid grid-flow-col auto-cols-fr gap-2"
+                    >
+                      <button
+                        :for={{id, route} <- @streams.route_tabs}
+                        id={"tab-#{id}"}
+                        type="button"
+                        role="tab"
+                        phx-click="select-route"
+                        phx-value-route-id={route.id}
+                        aria-selected={to_string(route.id == @selected_route_id)}
+                        aria-controls="selected-route-details"
+                        tabindex={if(route.id == @selected_route_id, do: "0", else: "-1")}
+                        class={[
+                          "min-h-16 min-w-0 rounded-xl border px-2 py-3 text-center transition",
+                          if(route.id == @selected_route_id,
+                            do: "border-accent bg-accent text-accent-content",
+                            else:
+                              "border-primary-content/20 bg-primary-content/5 text-primary-content/75"
+                          )
+                        ]}
+                      >
+                        <span class="block text-xs font-bold">{route_label(route.id)}</span>
+                        <span class="mt-1 block text-[11px]">{format_duration(route.duration_s)}</span>
+                      </button>
+                    </div>
+                    <div
+                      id="selected-route-details"
+                      role="tabpanel"
+                      aria-labelledby={"tab-route_tabs-#{@selected_route_id}"}
+                      class="mt-3 min-w-0 rounded-xl bg-base-100 p-4 text-base-content"
+                    >
+                      <p class="break-words text-sm font-semibold text-primary">
+                        {format_via(@selected_route.via)}
+                      </p>
+                      <dl class="mt-3 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                        <div>
+                          <dt class="text-xs text-base-content/60">Distance</dt><dd class="font-bold">
+                            {format_distance(@selected_route.distance_m)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt class="text-xs text-base-content/60">Time</dt><dd class="font-bold">
+                            {format_duration(@selected_route.duration_s)}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </div>
+
+                  <div id="candidate-routes" phx-update="stream" class="mt-5 hidden gap-3 md:grid">
+                    <button
+                      :for={{id, route} <- @streams.routes}
+                      id={id}
+                      type="button"
+                      phx-click="select-route"
+                      phx-value-route-id={route.id}
+                      aria-pressed={to_string(route.id == @selected_route_id)}
+                      class={[
+                        "group w-full rounded-xl border p-4 text-left text-base-content transition hover:-translate-y-0.5 hover:shadow-lg motion-reduce:transform-none",
+                        if(route.id == @selected_route_id,
+                          do: "border-accent bg-base-100 shadow-[0_0_0_2px_#e9ad45]",
+                          else: "border-transparent bg-base-100/90"
+                        )
+                      ]}
+                    >
+                      <div class="flex items-center justify-between gap-4">
+                        <div class="flex items-center gap-4">
+                          <span class={[
+                            "flex size-10 shrink-0 items-center justify-center rounded-full transition",
+                            if(route.id == @selected_route_id,
+                              do: "bg-secondary text-secondary-content",
+                              else: "bg-accent/25 text-secondary"
+                            )
+                          ]}>
+                            <.icon name="hero-map" class="size-5" />
+                          </span>
+                          <div class="min-w-0">
+                            <h3 class="font-bold text-primary">{route_label(route.id)}</h3>
+                            <p class="mt-1 line-clamp-2 text-xs leading-5 text-base-content/60">
+                              {format_via(route.via)}
+                            </p>
+                          </div>
+                        </div>
+                        <.icon
+                          :if={route.id == @selected_route_id}
+                          name="hero-check-circle"
+                          class="size-5 shrink-0 text-secondary"
+                        />
+                      </div>
+                      <dl class="mt-4 grid grid-cols-2 gap-4 border-t border-base-300 pt-4">
+                        <div>
+                          <dt class="text-[10px] uppercase tracking-wide text-base-content/45">
+                            Distance
+                          </dt>
+                          <dd class="mt-1 text-sm font-bold text-primary">
+                            {format_distance(route.distance_m)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt class="text-[10px] uppercase tracking-wide text-base-content/45">
+                            Time
+                          </dt>
+                          <dd class="mt-1 text-sm font-bold text-primary">
+                            {format_duration(route.duration_s)}
+                          </dd>
+                        </div>
+                      </dl>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

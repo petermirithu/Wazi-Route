@@ -5,7 +5,8 @@ defmodule WaziRoute.RuntimeConfigTest do
   @environment %{
     "DATABASE_URL" => "postgresql://localhost/wazi_route_config_test",
     "SECRET_KEY_BASE" => String.duplicate("test-only-", 8),
-    "PHX_HOST" => "wazi.example.org",
+    "PHX_HOST" => nil,
+    "RENDER_EXTERNAL_HOSTNAME" => "wazi.example.onrender.com",
     "PHX_SERVER" => "true",
     "PHX_IP" => nil,
     "PORT" => nil,
@@ -27,16 +28,16 @@ defmodule WaziRoute.RuntimeConfigTest do
     :ok
   end
 
-  test "production uses a loopback listener behind the public HTTPS proxy" do
+  test "production uses Render's public hostname and listener" do
     config = read_config()
     endpoint = config[:wazi_route][WaziRouteWeb.Endpoint]
     repo = config[:wazi_route][WaziRoute.Repo]
     mailer = config[:wazi_route][WaziRoute.Mailer]
 
     assert endpoint[:server]
-    assert endpoint[:http][:ip] == {127, 0, 0, 1}
+    assert endpoint[:http][:ip] == {0, 0, 0, 0}
     assert endpoint[:http][:port] == 4020
-    assert endpoint[:url] == [host: "wazi.example.org", port: 443, scheme: "https"]
+    assert endpoint[:url] == [host: "wazi.example.onrender.com", port: 443, scheme: "https"]
     assert repo[:url] == @environment["DATABASE_URL"]
     assert repo[:pool_size] == 10
     assert repo[:socket_options] == []
@@ -69,9 +70,18 @@ defmodule WaziRoute.RuntimeConfigTest do
     assert repo[:socket_options] == [:inet6]
   end
 
+  test "uses PHX_HOST when a custom domain is configured" do
+    System.put_env("PHX_HOST", "wazi.example.org")
+
+    config = read_config()
+    endpoint = config[:wazi_route][WaziRouteWeb.Endpoint]
+
+    assert endpoint[:url] == [host: "wazi.example.org", port: 443, scheme: "https"]
+  end
+
   test "fails early when required production environment is missing" do
     for key <-
-          ~w(DATABASE_URL SECRET_KEY_BASE PHX_HOST SMTP_RELAY SMTP_USERNAME SMTP_PASSWORD SMTP_FROM_EMAIL) do
+          ~w(DATABASE_URL SECRET_KEY_BASE SMTP_RELAY SMTP_USERNAME SMTP_PASSWORD SMTP_FROM_EMAIL) do
       System.delete_env(key)
 
       assert_raise RuntimeError, ~r/environment variable #{key} is missing/, fn ->
@@ -91,7 +101,7 @@ defmodule WaziRoute.RuntimeConfigTest do
   end
 
   test "non-production environments do not require production credentials" do
-    for key <- ~w(DATABASE_URL SECRET_KEY_BASE PHX_HOST PHX_SERVER) do
+    for key <- ~w(DATABASE_URL SECRET_KEY_BASE PHX_HOST RENDER_EXTERNAL_HOSTNAME PHX_SERVER) do
       System.delete_env(key)
     end
 

@@ -15,7 +15,9 @@ const RouteMap = {
     L.control.zoom({position: "bottomright"}).addTo(this.map)
     this.routeLayer = L.featureGroup().addTo(this.map)
 
-    this.handleEvent("route-selected", route => this.showRoute(route))
+    this.routes = new Map()
+    this.handleEvent("routes-found", result => this.showRoutes(result))
+    this.handleEvent("route-selected", route => this.selectRoute(route.id))
     this.handleEvent("route-cleared", () => this.clearRoute())
 
     this.panel = document.getElementById("planner-panel")
@@ -56,21 +58,45 @@ const RouteMap = {
   clearRoute() {
     this.routeBounds = null
     this.routeLayer.clearLayers()
+    this.routes.clear()
     this.map.flyTo([-1.2864, 36.8172], 11, {duration: 0.6})
   },
 
-  showRoute(route) {
-    this.routeLayer.clearLayers()
+  selectRoute(id) {
+    for (const [routeId, line] of this.routes) {
+      const selected = routeId === id
+      line.setStyle({
+        color: selected ? "#c45124" : "#687d78",
+        opacity: selected ? 1 : 0.55,
+        weight: selected ? 7 : 5,
+        className: selected ? "wazi-route-selected" : "wazi-route-alternative",
+      })
+      line.eachLayer(layer => {
+        const path = layer.getElement()
+        if (path) {
+          path.classList.toggle("wazi-route-selected", selected)
+          path.classList.toggle("wazi-route-alternative", !selected)
+        }
+      })
+    }
+    this.routes.get(id)?.bringToFront()
+    this.endpointLayer.bringToFront()
+  },
 
-    const line = L.geoJSON(route.geometry, {
-      style: {
-        color: "#a94f2d",
-        opacity: 0.95,
-        weight: 6,
-        lineCap: "round",
-        lineJoin: "round",
-      },
-    }).addTo(this.routeLayer)
+  showRoutes(result) {
+    this.routeLayer.clearLayers()
+    this.routes.clear()
+    const bounds = L.latLngBounds([])
+
+    for (const route of result.routes) {
+      const line = L.geoJSON(route.geometry, {
+        style: {lineCap: "round", lineJoin: "round"},
+      }).addTo(this.routeLayer)
+      line.on("click", () => this.pushEvent("select-route", {"route-id": route.id}))
+      this.routes.set(route.id, line)
+      bounds.extend(line.getBounds())
+    }
+    this.endpointLayer = L.featureGroup().addTo(this.routeLayer)
 
     const markerStyle = {
       color: "#fffaf0",
@@ -80,10 +106,11 @@ const RouteMap = {
       weight: 3,
     }
 
-    L.circleMarker(route.origin, markerStyle).addTo(this.routeLayer)
-    L.circleMarker(route.destination, {...markerStyle, fillColor: "#e9ad45"}).addTo(this.routeLayer)
+    L.circleMarker(result.origin, markerStyle).addTo(this.endpointLayer)
+    L.circleMarker(result.destination, {...markerStyle, fillColor: "#e9ad45"}).addTo(this.endpointLayer)
 
-    this.routeBounds = line.getBounds()
+    this.routeBounds = bounds
+    this.selectRoute(result.selected_id)
     this.fitRoute()
   },
 
