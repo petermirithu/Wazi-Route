@@ -12,10 +12,9 @@ This application is configured for a Render web service backed by Render Postgre
    | --- | --- |
    | Language | `Elixir` |
    | Build Command | `./build.sh` |
-   | Pre-Deploy Command | `_build/prod/rel/wazi_route/bin/migrate` |
    | Start Command | `_build/prod/rel/wazi_route/bin/server` |
 
-   The pre-deploy command runs the release migration script before a new version starts. It is safe to run repeatedly because Ecto tracks applied migrations.
+   The build script runs the release migration script after assembling the release. This supports Render's Free web services, which do not provide a pre-deploy command. It is safe to run repeatedly because Ecto tracks applied migrations. On a paid Render web service, you can instead move `_build/prod/rel/wazi_route/bin/migrate` into the pre-deploy command.
 
 ## Configure environment variables
 
