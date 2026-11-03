@@ -16,6 +16,13 @@ defmodule WaziRouteWeb.DashboardLiveTest do
     refute has_element?(view, "#nav-brand")
     assert has_element?(view, "#profile-menu")
     assert has_element?(view, "#profile-menu a[href='/profile']", "Profile")
+
+    assert has_element?(
+             view,
+             "#profile-menu a[href='/driving-preferences']",
+             "Driving preferences"
+           )
+
     assert has_element?(view, "#profile-menu a[href='/discover']", "Discover Wazi")
     assert has_element?(view, "#profile-menu a[href='/users/log-out']", "Log out")
     assert has_element?(view, "#journey-form")

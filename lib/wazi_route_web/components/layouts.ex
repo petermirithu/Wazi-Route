@@ -147,6 +147,13 @@ defmodule WaziRouteWeb.Layouts do
                       <.icon name="hero-user-circle" class="size-5 text-secondary" /> Profile
                     </.link>
                     <.link
+                      navigate={~p"/driving-preferences"}
+                      class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-primary transition hover:bg-base-200"
+                    >
+                      <.icon name="hero-adjustments-horizontal" class="size-5 text-secondary" />
+                      Driving preferences
+                    </.link>
+                    <.link
                       href={~p"/users/log-out"}
                       method="delete"
                       class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-error transition hover:bg-error/10"

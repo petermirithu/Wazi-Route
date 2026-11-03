@@ -1,0 +1,223 @@
+<Layouts.app flash={@flash} current_scope={@current_scope}>
+  <section class="wazi-pattern-light min-h-[calc(100dvh-5rem)] px-5 py-12 sm:px-8 lg:py-16">
+    <div class="mx-auto max-w-6xl">
+      <div class="max-w-3xl">
+        <p class="text-xs font-bold uppercase tracking-[0.14em] text-secondary">Drive your way</p>
+        <h1
+          id="driving-preferences-title"
+          class="mt-3 text-3xl font-bold text-primary sm:text-4xl"
+        >
+          Vehicle and route preferences
+        </h1>
+        <p class="mt-3 text-sm leading-7 text-base-content/65 sm:text-base">
+          Tell Wazi what you drive and what makes a route feel better. These choices will guide
+          future route comparisons; they do not make unknown roads look safe.
+        </p>
+      </div>
+
+      <div class="mt-10 grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+        <section
+          class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm sm:p-8"
+          aria-labelledby="vehicle-profiles-title"
+        >
+          <div class="flex items-start justify-between gap-5">
+            <div>
+              <div class="flex size-12 items-center justify-center rounded-xl bg-secondary/15 text-secondary">
+                <.icon name="hero-truck" class="size-6" />
+              </div>
+              <h2 id="vehicle-profiles-title" class="mt-5 text-2xl font-bold text-primary">
+                Your vehicles
+              </h2>
+              <p class="mt-2 text-sm leading-6 text-base-content/65">
+                Save a profile for each vehicle you drive. Your first profile becomes the default.
+              </p>
+            </div>
+            <span class="rounded-full bg-base-200 px-3 py-1 text-xs font-bold text-primary">
+              {@vehicle_count} {if(@vehicle_count == 1, do: "saved", else: "saved")}
+            </span>
+          </div>
+
+          <.form
+            for={@vehicle_form}
+            id="vehicle-profile-form"
+            phx-change="validate_vehicle"
+            phx-submit="save_vehicle"
+            class="mt-7 rounded-2xl border border-base-300 bg-base-200/60 p-5"
+          >
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div class="sm:col-span-2">
+                <.input
+                  field={@vehicle_form[:name]}
+                  type="text"
+                  label="Vehicle name"
+                  placeholder="e.g. My daily car"
+                  autocomplete="off"
+                  maxlength="60"
+                  required
+                />
+              </div>
+              <.input
+                field={@vehicle_form[:transmission]}
+                type="select"
+                label="Transmission"
+                options={[Manual: "manual", Automatic: "automatic"]}
+              />
+              <.input
+                field={@vehicle_form[:clearance_class]}
+                type="select"
+                label="Ground clearance"
+                options={[
+                  "Low — be careful on rough roads": "low",
+                  Normal: "normal",
+                  "High — suited to rougher roads": "high"
+                ]}
+              />
+            </div>
+            <.input
+              field={@vehicle_form[:hill_start_assist]}
+              type="checkbox"
+              label="This vehicle has hill-start assistance"
+            />
+            <.button
+              id="save-vehicle-profile"
+              phx-disable-with="Saving..."
+              class="mt-4 inline-flex min-h-11 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-content transition hover:-translate-y-0.5 hover:bg-secondary hover:text-secondary-content motion-reduce:transform-none"
+            >
+              Save vehicle <.icon name="hero-plus" class="size-4" />
+            </.button>
+          </.form>
+
+          <div id="vehicle-profiles" phx-update="stream" class="mt-5 space-y-3">
+            <div
+              id="vehicle-profiles-empty"
+              class="hidden rounded-xl border border-dashed border-base-300 px-5 py-8 text-center text-sm text-base-content/55 only:block"
+            >
+              No vehicle profile yet. Add the vehicle you drive most often.
+            </div>
+            <article
+              :for={{id, profile} <- @streams.vehicle_profiles}
+              id={id}
+              class="rounded-2xl border border-base-300 bg-base-100 p-5 transition hover:border-secondary/50 hover:shadow-sm"
+            >
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="font-bold text-primary">{profile.name}</h3>
+                    <span
+                      :if={profile.is_default}
+                      class="rounded-full bg-secondary/15 px-2.5 py-1 text-[0.68rem] font-bold uppercase tracking-wide text-secondary"
+                    >
+                      Default
+                    </span>
+                  </div>
+                  <p class="mt-2 text-sm text-base-content/65">
+                    {transmission_label(profile.transmission)} · {clearance_label(
+                      profile.clearance_class
+                    )}
+                    <span :if={profile.hill_start_assist}> · Hill-start assist</span>
+                  </p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    :if={!profile.is_default}
+                    id={"default-#{profile.id}"}
+                    type="button"
+                    phx-click="make_default_vehicle"
+                    phx-value-vehicle-id={profile.id}
+                    class="inline-flex min-h-10 items-center rounded-lg border border-primary/20 px-3 text-xs font-bold text-primary transition hover:border-secondary hover:bg-secondary/10"
+                  >
+                    Make default
+                  </button>
+                  <button
+                    id={"delete-#{profile.id}"}
+                    type="button"
+                    phx-click="delete_vehicle"
+                    phx-value-vehicle-id={profile.id}
+                    class="inline-flex min-h-10 items-center rounded-lg px-3 text-xs font-bold text-error transition hover:bg-error/10"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section
+          class="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm sm:p-8"
+          aria-labelledby="route-preferences-title"
+        >
+          <div class="flex size-12 items-center justify-center rounded-xl bg-accent/25 text-secondary">
+            <.icon name="hero-adjustments-horizontal" class="size-6" />
+          </div>
+          <h2 id="route-preferences-title" class="mt-5 text-2xl font-bold text-primary">
+            Route comfort
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-base-content/65">
+            Balance speed against the road conditions and hill traffic you would rather avoid.
+          </p>
+
+          <.form
+            for={@preference_form}
+            id="routing-preferences-form"
+            phx-change="validate_preferences"
+            phx-submit="save_preferences"
+            class="mt-7 space-y-3"
+          >
+            <div class="rounded-xl border border-base-300 bg-base-200/60 px-4 py-3">
+              <.input
+                field={@preference_form[:avoid_rough_roads]}
+                type="checkbox"
+                label="Avoid rough roads when a reasonable alternative exists"
+              />
+            </div>
+            <div class="rounded-xl border border-base-300 bg-base-200/60 px-4 py-3">
+              <.input
+                field={@preference_form[:avoid_congested_uphill]}
+                type="checkbox"
+                label="Avoid congested uphill sections where possible"
+              />
+            </div>
+            <div class="rounded-xl border border-base-300 bg-base-200/60 px-4 py-3">
+              <.input
+                field={@preference_form[:prefer_verified_conditions]}
+                type="checkbox"
+                label="Prefer roads with recently verified condition information"
+              />
+            </div>
+            <div class="grid gap-4 pt-2 sm:grid-cols-2">
+              <.input
+                field={@preference_form[:max_extra_minutes]}
+                type="number"
+                label="Maximum extra time"
+                min="0"
+                max="60"
+                step="1"
+              />
+              <.input
+                field={@preference_form[:unknown_condition_tolerance]}
+                type="select"
+                label="When road condition is unknown"
+                options={[
+                  "Be cautious": "cautious",
+                  "Balance with travel time": "balanced",
+                  "Keep it open": "open"
+                ]}
+              />
+            </div>
+            <p class="-mt-2 text-xs leading-5 text-base-content/55">
+              Extra time limits the detour Wazi may recommend for a more comfortable route.
+            </p>
+            <.button
+              id="save-routing-preferences"
+              phx-disable-with="Saving..."
+              class="mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-secondary px-4 text-sm font-bold text-secondary-content transition hover:-translate-y-0.5 hover:bg-primary hover:text-primary-content motion-reduce:transform-none"
+            >
+              Save route preferences <.icon name="hero-check" class="size-4" />
+            </.button>
+          </.form>
+        </section>
+      </div>
+    </div>
+  </section>
+</Layouts.app>

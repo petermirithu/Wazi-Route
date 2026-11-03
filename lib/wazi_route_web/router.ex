@@ -54,6 +54,7 @@ defmodule WaziRouteWeb.Router do
     live_session :require_authenticated_user,
       on_mount: [{WaziRouteWeb.UserAuth, :require_authenticated}] do
       live "/dashboard", DashboardLive, :index
+      live "/driving-preferences", DrivingPreferencesLive, :index
       live "/profile", UserLive.Profile, :edit
       live "/profile/confirm-email/:token", UserLive.Profile, :confirm_email
     end
