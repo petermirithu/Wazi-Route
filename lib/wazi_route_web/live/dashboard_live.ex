@@ -203,4 +203,15 @@ defmodule WaziRouteWeb.DashboardLive do
   defp evidence_condition_label("rough"), do: "rough-road evidence"
   defp evidence_condition_label("unpaved"), do: "unpaved-road evidence"
   defp evidence_condition_label("obstruction"), do: "obstruction evidence"
+
+  defp elevation_status_label(%{status: :available}), do: "Directional elevation estimate"
+  defp elevation_status_label(_elevation), do: "Elevation data is unavailable for this route"
+
+  defp elevation_feature(elevation, feature) do
+    features = Map.get(elevation, :features, %{})
+    Map.get(features, Atom.to_string(feature), Map.get(features, feature, 0.0))
+  end
+
+  defp format_metres(value), do: "#{Float.round(value * 1.0, 0)} m"
+  defp format_grade(value), do: "#{Float.round(value * 1.0, 1)}%"
 end

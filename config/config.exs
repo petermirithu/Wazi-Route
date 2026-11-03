@@ -31,6 +31,9 @@ config :wazi_route, Oban,
 
 config :wazi_route, :geocoding_provider, WaziRoute.Location.Geocoding.Geoapify
 config :wazi_route, :routing_provider, WaziRoute.Location.Routing.OpenRouteService
+config :wazi_route, :elevation_provider, WaziRoute.Location.Elevation.OpenTopoData
+config :wazi_route, :elevation_sampling_interval_m, 50
+config :wazi_route, :elevation_maximum_request_points, 100
 
 # Configure the endpoint
 config :wazi_route, WaziRouteWeb.Endpoint,

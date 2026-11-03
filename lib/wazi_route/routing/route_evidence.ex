@@ -39,7 +39,8 @@ defmodule WaziRoute.Routing.RouteEvidence do
         known_condition_roads: Enum.map(known, &evidence_summary/1),
         unknown_condition_roads: unknown,
         verified_obstruction?: "obstruction" in conditions,
-        traffic_basis: :none
+        traffic_basis: :none,
+        elevation: route.elevation
       }
     }
   end

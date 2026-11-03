@@ -31,6 +31,7 @@ config :wazi_route, WaziRoute.Mailer, adapter: Swoosh.Adapters.Test
 
 config :wazi_route, :geocoding_provider, WaziRoute.Location.Geocoding.Mock
 config :wazi_route, :routing_provider, WaziRoute.Location.Routing.Mock
+config :wazi_route, :elevation_provider, WaziRoute.Location.Elevation.Mock
 
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
