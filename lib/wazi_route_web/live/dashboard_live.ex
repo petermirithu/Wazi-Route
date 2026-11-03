@@ -169,6 +169,9 @@ defmodule WaziRouteWeb.DashboardLive do
   defp error_message(:no_routes_found),
     do: "No driving routes were found between those locations."
 
+  defp error_message(:no_matching_routes),
+    do: "No candidate route meets your current comfort and detour preferences."
+
   defp error_message(_reason),
     do: "Route planning is temporarily unavailable. Please try again."
 
@@ -188,4 +191,16 @@ defmodule WaziRouteWeb.DashboardLive do
       hours -> "#{hours} hr #{rem(minutes, 60)} min"
     end
   end
+
+  defp evidence_coverage_label(%{coverage: :full}),
+    do: "Verified condition evidence covers named roads"
+
+  defp evidence_coverage_label(%{coverage: :partial}), do: "Condition evidence is partial"
+  defp evidence_coverage_label(%{coverage: :unknown}), do: "Road condition is unknown"
+  defp evidence_coverage_label(_evidence), do: "Road condition is unknown"
+
+  defp evidence_condition_label("smooth"), do: "recently verified smooth"
+  defp evidence_condition_label("rough"), do: "rough-road evidence"
+  defp evidence_condition_label("unpaved"), do: "unpaved-road evidence"
+  defp evidence_condition_label("obstruction"), do: "obstruction evidence"
 end

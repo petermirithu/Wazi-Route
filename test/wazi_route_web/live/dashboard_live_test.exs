@@ -66,6 +66,7 @@ defmodule WaziRouteWeb.DashboardLiveTest do
     assert has_element?(view, "#route-tabs[role='tablist']")
     assert has_element?(view, "#tab-route_tabs-route-1[aria-selected='true']")
     assert has_element?(view, "#selected-route-details[aria-labelledby='tab-route_tabs-route-1']")
+    assert has_element?(view, "#route-evidence-summary", "Road condition is unknown")
     assert has_element?(view, "#planner-results")
     assert has_element?(view, "#planner-panel[data-state='ready']")
     refute has_element?(view, "#journey-form")

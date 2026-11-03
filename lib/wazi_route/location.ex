@@ -1,10 +1,11 @@
 defmodule WaziRoute.Location do
   alias WaziRoute.Accounts.{Scope, User}
   alias WaziRoute.Location.Place
+  alias WaziRoute.Routing.Ranker
 
   @spec plan_routes(struct(), String.t(), String.t()) ::
           {:ok, %{origin: Place.t(), destination: Place.t(), routes: list()}} | {:error, term()}
-  def plan_routes(%Scope{user: %User{}}, origin_query, destination_query)
+  def plan_routes(%Scope{user: %User{}} = scope, origin_query, destination_query)
       when is_binary(origin_query) and is_binary(destination_query) do
     geocoding_provider = Application.fetch_env!(:wazi_route, :geocoding_provider)
     routing_provider = Application.fetch_env!(:wazi_route, :routing_provider)
@@ -12,18 +13,29 @@ defmodule WaziRoute.Location do
     with {:ok, origin} <- geocode_first(geocoding_provider, origin_query, :origin_not_found),
          {:ok, destination} <-
            geocode_first(geocoding_provider, destination_query, :destination_not_found),
-         {:ok, routes} <-
-           routing_provider.routes(coordinates(origin), coordinates(destination), limit: 3),
-         routes =
-           routes
-           |> Enum.uniq_by(& &1.geometry)
-           |> Enum.take(3)
-           |> Enum.with_index(1)
-           |> Enum.map(fn {route, index} -> %{route | id: "route-#{index}"} end),
-         [_ | _] <- routes do
-      {:ok, %{origin: origin, destination: destination, routes: routes}}
+         {:ok, candidates} <-
+           routing_provider.routes(coordinates(origin), coordinates(destination), limit: 3) do
+      routes = candidates |> Enum.uniq_by(& &1.geometry) |> Enum.take(3)
+
+      case routes do
+        [] ->
+          {:error, :no_routes_found}
+
+        _ ->
+          case Ranker.rank(scope, routes) do
+            [] ->
+              {:error, :no_matching_routes}
+
+            ranked_routes ->
+              ranked_routes =
+                ranked_routes
+                |> Enum.with_index(1)
+                |> Enum.map(fn {route, index} -> %{route | id: "route-#{index}"} end)
+
+              {:ok, %{origin: origin, destination: destination, routes: ranked_routes}}
+          end
+      end
     else
-      [] -> {:error, :no_routes_found}
       {:error, reason} -> {:error, reason}
     end
   end

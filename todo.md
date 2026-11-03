@@ -5,12 +5,13 @@
 3. Explicit missing-provider-data handling and Ruaka–Loresho coverage tests.
 4. Authenticated vehicle profiles: transmission, clearance class, hill-start assistance, and a default vehicle.
 5. Authenticated route preferences: rough roads, congested uphill sections, verified conditions, detour budget, and unknown-road tolerance.
+6. Time-bounded verified road-condition evidence, explicit unknown-condition handling, and deterministic candidate reranking.
 
-## Next: route evidence and scoring
+## Next: elevation and traffic enrichment
 
-1. Elevation and road-condition evidence for the Nairobi northwest pilot.
-2. Directional gradient and road-condition feature extraction.
-3. Deterministic scoring using the saved vehicle profile and routing preferences.
-4. Traffic integration with freshness-aware uphill-congestion scoring.
+1. Import and validate Nairobi northwest road-condition evidence for the pilot.
+2. Add elevation sampling and directional gradient feature extraction.
+3. Integrate traffic with freshness-aware uphill-congestion scoring.
+4. Add route explanations that cite the exact evidence used in each recommendation.
 
 Avoid implementing AI or community reports until candidate routes and provider coverage are proven.

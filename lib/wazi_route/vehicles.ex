@@ -17,6 +17,10 @@ defmodule WaziRoute.Vehicles do
     |> Repo.all()
   end
 
+  def get_default_vehicle_profile(%Scope{user: user}) do
+    Repo.get_by(VehicleProfile, user_id: user.id, is_default: true)
+  end
+
   def change_vehicle_profile(%VehicleProfile{} = profile, attrs \\ %{}) do
     VehicleProfile.changeset(profile, attrs)
   end
