@@ -63,15 +63,18 @@ const RouteMap = {
   },
 
   selectRoute(id) {
-    for (const [routeId, line] of this.routes) {
+    for (const [routeId, routeLayers] of this.routes) {
       const selected = routeId === id
-      line.setStyle({
-        color: selected ? "#c45124" : "#687d78",
-        opacity: selected ? 1 : 0.55,
-        weight: selected ? 7 : 5,
-        className: selected ? "wazi-route-selected" : "wazi-route-alternative",
+      routeLayers.halo.setStyle({
+        opacity: selected ? 0.94 : 0.6,
+        weight: selected ? 12 : 9,
       })
-      line.eachLayer(layer => {
+      routeLayers.line.setStyle({
+        color: selected ? "#bb5739" : "#5f8272",
+        opacity: selected ? 1 : 0.72,
+        weight: selected ? 6 : 4,
+      })
+      routeLayers.line.eachLayer(layer => {
         const path = layer.getElement()
         if (path) {
           path.classList.toggle("wazi-route-selected", selected)
@@ -79,7 +82,9 @@ const RouteMap = {
         }
       })
     }
-    this.routes.get(id)?.bringToFront()
+    const selectedRoute = this.routes.get(id)
+    selectedRoute?.halo.bringToFront()
+    selectedRoute?.line.bringToFront()
     this.endpointLayer.bringToFront()
   },
 
@@ -89,29 +94,41 @@ const RouteMap = {
     const bounds = L.latLngBounds([])
 
     for (const route of result.routes) {
+      const halo = L.geoJSON(route.geometry, {
+        interactive: false,
+        style: {
+          color: "#fffaf0",
+          lineCap: "round",
+          lineJoin: "round",
+          opacity: 0.6,
+          weight: 9,
+        },
+      }).addTo(this.routeLayer)
       const line = L.geoJSON(route.geometry, {
         style: {lineCap: "round", lineJoin: "round"},
       }).addTo(this.routeLayer)
+
       line.on("click", () => this.pushEvent("select-route", {"route-id": route.id}))
-      this.routes.set(route.id, line)
+      this.routes.set(route.id, {halo, line})
       bounds.extend(line.getBounds())
     }
     this.endpointLayer = L.featureGroup().addTo(this.routeLayer)
 
-    const markerStyle = {
-      color: "#fffaf0",
-      fillColor: "#273f30",
-      fillOpacity: 1,
-      radius: 8,
-      weight: 3,
-    }
-
-    L.circleMarker(result.origin, markerStyle).addTo(this.endpointLayer)
-    L.circleMarker(result.destination, {...markerStyle, fillColor: "#e9ad45"}).addTo(this.endpointLayer)
+    L.marker(result.origin, {icon: this.endpointIcon("A", "origin")}).addTo(this.endpointLayer)
+    L.marker(result.destination, {icon: this.endpointIcon("B", "destination")}).addTo(this.endpointLayer)
 
     this.routeBounds = bounds
     this.selectRoute(result.selected_id)
     this.fitRoute()
+  },
+
+  endpointIcon(label, kind) {
+    return L.divIcon({
+      className: "wazi-endpoint-marker",
+      html: `<span class="wazi-endpoint-marker__core wazi-endpoint-marker__core--${kind}">${label}</span>`,
+      iconSize: [38, 38],
+      iconAnchor: [19, 19],
+    })
   },
 
   destroyed() {
