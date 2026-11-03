@@ -9,6 +9,7 @@ defmodule WaziRoute.Location.CandidateRoute do
     :comfort_penalty_minutes,
     evidence: %{},
     elevation: %{},
+    traffic: %{},
     score_breakdown: %{},
     via: []
   ]
@@ -23,6 +24,7 @@ defmodule WaziRoute.Location.CandidateRoute do
           comfort_penalty_minutes: number() | nil,
           evidence: map(),
           elevation: map(),
+          traffic: map(),
           score_breakdown: map()
         }
 end

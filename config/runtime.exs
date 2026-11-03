@@ -29,6 +29,8 @@ config :wazi_route, WaziRoute.Location.Geocoding.Geoapify,
 config :wazi_route, WaziRoute.Location.Routing.OpenRouteService,
   api_key: System.get_env("OPENROUTESERVICE_API_KEY")
 
+config :wazi_route, WaziRoute.Location.Traffic.TomTom, api_key: System.get_env("TOMTOM_API_KEY")
+
 if config_env() == :dev do
   # Reload browser tabs when matching files change.
   config :wazi_route, WaziRouteWeb.Endpoint,

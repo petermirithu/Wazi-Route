@@ -12,6 +12,6 @@ defmodule WaziRoute.Location.Elevation.Mock do
     {:ok,
      points
      |> Enum.with_index()
-     |> Enum.map(fn {_point, index} -> %{elevation_m: index * 4.0} end)}
+     |> Enum.map(fn {_point, index} -> %{elevation_m: index * 6.0} end)}
   end
 end

@@ -1,6 +1,7 @@
 defmodule WaziRoute.Location do
   alias WaziRoute.Accounts.{Scope, User}
   alias WaziRoute.Location.Elevation
+  alias WaziRoute.Location.Traffic
   alias WaziRoute.Location.Place
   alias WaziRoute.Routing.Ranker
 
@@ -23,7 +24,10 @@ defmodule WaziRoute.Location do
           {:error, :no_routes_found}
 
         _ ->
-          case routes |> Elevation.enrich_routes() |> then(&Ranker.rank(scope, &1)) do
+          case routes
+               |> Elevation.enrich_routes()
+               |> Traffic.enrich_routes()
+               |> then(&Ranker.rank(scope, &1)) do
             [] ->
               {:error, :no_matching_routes}
 

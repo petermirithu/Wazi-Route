@@ -36,7 +36,8 @@ defmodule WaziRoute.Location.Gradient do
         "total_ascent_m" => Float.round(ascent_m * 1.0, 1),
         "uphill_distance_m" =>
           Float.round(Enum.sum_by(uphill_segments, & &1.distance_m) * 1.0, 1),
-        "max_uphill_grade_percent" => Float.round(max_uphill_grade_percent, 1)
+        "max_uphill_grade_percent" => Float.round(max_uphill_grade_percent, 1),
+        "uphill_points" => Enum.map(uphill_segments, &Map.take(&1.to, [:latitude, :longitude]))
       }
     end
   end
@@ -46,7 +47,13 @@ defmodule WaziRoute.Location.Gradient do
          elevation_to when is_number(elevation_to) <- Map.get(to, :elevation_m),
          distance_m when distance_m > 0 <- RouteSampler.distance_m(from, to) do
       rise_m = elevation_to - elevation_from
-      %{rise_m: rise_m, distance_m: distance_m, grade_percent: 100 * rise_m / distance_m}
+
+      %{
+        rise_m: rise_m,
+        distance_m: distance_m,
+        grade_percent: 100 * rise_m / distance_m,
+        to: to
+      }
     else
       _ -> nil
     end
@@ -57,7 +64,8 @@ defmodule WaziRoute.Location.Gradient do
       "grade_data_confidence" => 0.0,
       "total_ascent_m" => 0.0,
       "uphill_distance_m" => 0.0,
-      "max_uphill_grade_percent" => 0.0
+      "max_uphill_grade_percent" => 0.0,
+      "uphill_points" => []
     }
   end
 end

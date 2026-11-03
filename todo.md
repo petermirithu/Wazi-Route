@@ -7,11 +7,12 @@
 5. Authenticated route preferences: rough roads, congested uphill sections, verified conditions, detour budget, and unknown-road tolerance.
 6. Time-bounded verified road-condition evidence, explicit unknown-condition handling, and deterministic candidate reranking.
 7. On-demand elevation sampling, directional uphill estimates, and a geometry/dataset cache for candidate routes.
+8. On-demand live traffic sampling with a short-lived cache, explicit freshness states, uphill-congestion penalties, and closure filtering.
 
-## Next: elevation and traffic enrichment
+## Next: evidence collection and explanation
 
-1. Import and validate Nairobi northwest road-condition evidence for the pilot.
-2. Integrate traffic with freshness-aware uphill-congestion scoring.
-3. Add route explanations that cite the exact evidence used in each recommendation.
+1. Import and validate Nairobi road-condition evidence for the pilot.
+2. Add route explanations that cite the exact evidence used in each recommendation.
+3. Make sure road suggestion is based on route preferences, road conditions etc for best road. with option to view why the suggetsion.
 
 Avoid implementing AI or community reports until candidate routes and provider coverage are proven.

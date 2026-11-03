@@ -34,6 +34,9 @@ config :wazi_route, :routing_provider, WaziRoute.Location.Routing.OpenRouteServi
 config :wazi_route, :elevation_provider, WaziRoute.Location.Elevation.OpenTopoData
 config :wazi_route, :elevation_sampling_interval_m, 50
 config :wazi_route, :elevation_maximum_request_points, 100
+config :wazi_route, :traffic_provider, WaziRoute.Location.Traffic.TomTom
+config :wazi_route, :traffic_cache_ttl_seconds, 300
+config :wazi_route, :traffic_max_concurrency, 2
 
 # Configure the endpoint
 config :wazi_route, WaziRouteWeb.Endpoint,

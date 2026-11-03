@@ -32,14 +32,17 @@ defmodule WaziRoute.Routing.RouteEvidence do
       rough_km: Enum.count(conditions, &(&1 == "rough")) * represented_distance_km,
       unpaved_km: Enum.count(conditions, &(&1 == "unpaved")) * represented_distance_km,
       unknown_condition_km: length(unknown) * represented_distance_km,
-      uphill_slow_traffic_exposure: 0.0,
-      verified_obstruction?: "obstruction" in conditions,
+      uphill_slow_traffic_exposure: Map.get(route.traffic, :uphill_slow_traffic_exposure, 0.0),
+      verified_obstruction?:
+        "obstruction" in conditions or Map.get(route.traffic, :road_closure?, false),
       evidence: %{
         coverage: coverage(known, road_names),
         known_condition_roads: Enum.map(known, &evidence_summary/1),
         unknown_condition_roads: unknown,
-        verified_obstruction?: "obstruction" in conditions,
-        traffic_basis: :none,
+        verified_obstruction?:
+          "obstruction" in conditions or Map.get(route.traffic, :road_closure?, false),
+        traffic_basis: Map.get(route.traffic, :basis, :none),
+        traffic: route.traffic,
         elevation: route.elevation
       }
     }

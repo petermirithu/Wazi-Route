@@ -123,6 +123,72 @@ defmodule WaziRoute.Routing.RankerTest do
     assert route.id == "fast"
   end
 
+  test "uses fresh uphill slow-traffic exposure when ranking manual vehicles" do
+    scope = user_fixture() |> Scope.for_user()
+
+    {:ok, _profile} =
+      Vehicles.create_vehicle_profile(scope, %{
+        name: "Manual daily car",
+        transmission: "manual",
+        clearance_class: "normal"
+      })
+
+    {:ok, _preferences} =
+      Routing.save_routing_preferences(scope, %{
+        avoid_congested_uphill: true,
+        prefer_verified_conditions: false,
+        max_extra_minutes: 10
+      })
+
+    uphill_traffic_route =
+      candidate("traffic", 10_000, 1_200, ["Traffic Road"])
+      |> Map.put(:traffic, %{
+        status: :fresh,
+        basis: :live,
+        uphill_slow_traffic_exposure: 2.0,
+        road_closure?: false
+      })
+
+    clear_route =
+      candidate("clear", 11_000, 1_320, ["Clear Road"])
+      |> Map.put(:traffic, %{
+        status: :fresh,
+        basis: :live,
+        uphill_slow_traffic_exposure: 0.0,
+        road_closure?: false
+      })
+
+    [best_route, _other_route] = Ranker.rank(scope, [uphill_traffic_route, clear_route])
+
+    assert best_route.id == "clear"
+    assert best_route.evidence.traffic_basis == :live
+  end
+
+  test "removes a route with a fresh traffic-reported closure" do
+    scope = user_fixture() |> Scope.for_user()
+
+    closed_route =
+      candidate("closed-by-traffic", 10_000, 1_200, ["Traffic Road"])
+      |> Map.put(:traffic, %{
+        status: :fresh,
+        basis: :live,
+        uphill_slow_traffic_exposure: 0.0,
+        road_closure?: true
+      })
+
+    open_route =
+      candidate("open", 11_000, 1_260, ["Open Road"])
+      |> Map.put(:traffic, %{
+        status: :fresh,
+        basis: :live,
+        uphill_slow_traffic_exposure: 0.0,
+        road_closure?: false
+      })
+
+    assert [route] = Ranker.rank(scope, [closed_route, open_route])
+    assert route.id == "open"
+  end
+
   defp candidate(id, distance_m, duration_s, via) do
     %CandidateRoute{
       id: id,

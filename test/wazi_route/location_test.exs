@@ -17,6 +17,7 @@ defmodule WaziRoute.LocationTest do
     assert length(result.routes) == 3
     assert Enum.all?(result.routes, &(&1.distance_m > 0 and &1.duration_s > 0))
     assert Enum.all?(result.routes, &(&1.evidence.elevation.status == :available))
+    assert Enum.all?(result.routes, &(&1.evidence.traffic.status == :fresh))
   end
 
   test "returns an explicit error when geocoding has no result" do

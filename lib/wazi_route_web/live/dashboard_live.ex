@@ -214,4 +214,13 @@ defmodule WaziRouteWeb.DashboardLive do
 
   defp format_metres(value), do: "#{Float.round(value * 1.0, 0)} m"
   defp format_grade(value), do: "#{Float.round(value * 1.0, 1)}%"
+
+  defp traffic_status_label(%{status: :fresh}), do: "Fresh live traffic applied"
+  defp traffic_status_label(%{status: :partial}), do: "Partial live traffic applied"
+
+  defp traffic_status_label(%{status: :not_applicable}),
+    do: "No uphill section to assess for traffic"
+
+  defp traffic_status_label(_traffic),
+    do: "Live traffic is unavailable; it is not used in this score"
 end
