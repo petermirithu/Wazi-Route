@@ -189,6 +189,50 @@ defmodule WaziRoute.Routing.RankerTest do
     assert route.id == "open"
   end
 
+  test "ranks the Nairobi northwest pilot corridor routes using verified imported evidence" do
+    scope = user_fixture() |> Scope.for_user()
+
+    {:ok, _profile} =
+      Vehicles.create_vehicle_profile(scope, %{
+        name: "Low Manual Commuter",
+        transmission: "manual",
+        clearance_class: "low"
+      })
+
+    {:ok, _preferences} =
+      Routing.save_routing_preferences(scope, %{
+        avoid_rough_roads: true,
+        avoid_congested_uphill: true,
+        prefer_verified_conditions: true,
+        max_extra_minutes: 20
+      })
+
+    manifest_path =
+      Path.expand("../../../priv/road_condition_imports/nairobi_northwest_osm.json", __DIR__)
+
+    assert {:ok, records} = WaziRoute.Roads.EvidenceImporter.import_file(manifest_path)
+
+    # Approve all records for the pilot
+    for record <- records do
+      assert {:ok, _} =
+               Roads.review_imported_condition_evidence(record.import_key, "verified")
+    end
+
+    limuru_route = candidate("route-limuru", 12_900, 1_500, ["Limuru Road"])
+
+    redhill_route =
+      candidate("route-redhill", 13_750, 1_680, ["Red Hill Link Road", "Waiyaki Way"])
+
+    loresho_route = candidate("route-loresho", 14_600, 1_860, ["Lower Kabete Road"])
+
+    ranked = Ranker.rank(scope, [limuru_route, redhill_route, loresho_route])
+
+    # The smooth routes rank ahead of the rough Limuru Road for low clearance
+    assert hd(ranked).id in ["route-redhill", "route-loresho"]
+    assert List.last(ranked).id == "route-limuru"
+    assert List.last(ranked).comfort_penalty_minutes > 0
+  end
+
   defp candidate(id, distance_m, duration_s, via) do
     %CandidateRoute{
       id: id,

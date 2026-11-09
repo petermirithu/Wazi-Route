@@ -70,6 +70,34 @@ defmodule WaziRoute.Roads.EvidenceImporterTest do
     assert evidence.verification_status == "unverified"
   end
 
+  test "imports and validates the Nairobi northwest pilot corridor dataset" do
+    path = Path.expand("../../../priv/road_condition_imports/nairobi_northwest_osm.json", __DIR__)
+
+    assert {:ok, records} = EvidenceImporter.import_file(path)
+    assert length(records) == 8
+
+    by_name = Map.new(records, &{&1.road_name, &1})
+
+    assert by_name["Limuru Road"].condition == "rough"
+    assert by_name["Limuru Road"].verification_status == "unverified"
+    assert by_name["Red Hill Road"].condition == "smooth"
+    assert by_name["Red Hill Link Road"].condition == "smooth"
+    assert by_name["Lower Kabete Road"].condition == "smooth"
+    assert by_name["Waiyaki Way"].condition == "smooth"
+    assert by_name["James Gichuru Road"].condition == "smooth"
+    assert by_name["Loresho Ridge"].condition == "smooth"
+    assert by_name["Kaptagat Road"].condition == "smooth"
+
+    # Approving evidence makes it active for route scoring
+    assert {:ok, verified} =
+             Roads.review_imported_condition_evidence(
+               by_name["Limuru Road"].import_key,
+               "verified"
+             )
+
+    assert verified.verification_status == "verified"
+  end
+
   defp manifest(observed_at) do
     %{
       "schema_version" => 1,
