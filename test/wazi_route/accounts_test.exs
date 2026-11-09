@@ -84,7 +84,33 @@ defmodule WaziRoute.AccountsTest do
       assert is_binary(user.hashed_password)
       assert is_nil(user.confirmed_at)
       assert is_nil(user.password)
+      assert Accounts.has_role?(user, "user")
       refute Accounts.get_user_by_email_and_password(email, valid_user_password())
+    end
+  end
+
+  describe "roles" do
+    test "grants an existing user the admin role" do
+      user = user_fixture()
+
+      refute Accounts.has_permission?(user, "road_condition_evidence", "review")
+
+      assert {:ok, admin} = Accounts.grant_admin_role(user.email)
+      assert Accounts.has_role?(admin, "admin")
+      assert Accounts.has_role?(admin, "user")
+      assert Accounts.has_permission?(admin, "road_condition_evidence", "review")
+    end
+
+    test "does not grant admin access to an unknown email" do
+      assert {:error, :not_found} = Accounts.grant_admin_role("unknown@example.com")
+    end
+
+    test "assigns only seeded roles" do
+      user = user_fixture()
+
+      assert {:ok, assigned_user} = Accounts.assign_role_by_email(user.email, "user")
+      assert assigned_user.id == user.id
+      assert {:error, :unknown_role} = Accounts.assign_role_by_email(user.email, "operator")
     end
   end
 

@@ -38,6 +38,12 @@ defmodule WaziRoute.AccountsFixtures do
     |> WaziRoute.Repo.update!()
   end
 
+  def admin_fixture(attrs \\ %{}) do
+    user = user_fixture(attrs)
+    {:ok, user} = Accounts.grant_admin_role(user.email)
+    user
+  end
+
   def user_scope_fixture do
     user = user_fixture()
     user_scope_fixture(user)

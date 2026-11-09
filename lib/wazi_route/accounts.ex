@@ -6,7 +6,16 @@ defmodule WaziRoute.Accounts do
   import Ecto.Query, warn: false
   alias WaziRoute.Repo
 
-  alias WaziRoute.Accounts.{Scope, User, UserToken, UserNotifier}
+  alias WaziRoute.Accounts.{
+    Permission,
+    Role,
+    RolePermission,
+    Scope,
+    User,
+    UserNotifier,
+    UserRole,
+    UserToken
+  }
 
   ## Database getters
   def get_user_by_email(email) when is_binary(email) do
@@ -34,9 +43,17 @@ defmodule WaziRoute.Accounts do
   def get_user(id), do: Repo.get(User, id)
 
   def register_user(attrs) do
-    %User{}
-    |> User.registration_changeset(attrs)
-    |> Repo.insert()
+    Repo.transaction(fn ->
+      with {:ok, user} <-
+             %User{}
+             |> User.registration_changeset(attrs)
+             |> Repo.insert(),
+           {:ok, _assignment} <- assign_role(user, "user") do
+        user
+      else
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
   end
 
   def change_user_registration(user, attrs \\ %{}, opts \\ []) do
@@ -51,6 +68,63 @@ defmodule WaziRoute.Accounts do
     user
     |> User.profile_changeset(attrs)
     |> Repo.update()
+  end
+
+  def grant_admin_role(email) when is_binary(email) do
+    assign_role_by_email(email, "admin")
+  end
+
+  def assign_role_by_email(email, role_name)
+      when is_binary(email) and is_binary(role_name) do
+    case get_user_by_email(email) do
+      nil ->
+        {:error, :not_found}
+
+      user ->
+        case assign_role(user, role_name) do
+          {:ok, _assignment} -> {:ok, user}
+          {:error, _reason} = error -> error
+        end
+    end
+  end
+
+  def assign_role(%User{} = user, role_name, assigned_by_user \\ nil) when is_binary(role_name) do
+    case Repo.get_by(Role, name: role_name) do
+      nil ->
+        {:error, :unknown_role}
+
+      role ->
+        %UserRole{}
+        |> UserRole.changeset(%{
+          user_id: user.id,
+          role_id: role.id,
+          assigned_by_user_id: assigned_by_user && assigned_by_user.id
+        })
+        |> Repo.insert(on_conflict: :nothing, conflict_target: [:user_id, :role_id])
+    end
+  end
+
+  def has_role?(%User{} = user, role_name) when is_binary(role_name) do
+    from(user_role in UserRole,
+      join: role in Role,
+      on: role.id == user_role.role_id,
+      where: user_role.user_id == ^user.id and role.name == ^role_name
+    )
+    |> Repo.exists?()
+  end
+
+  def has_permission?(%User{} = user, resource, action)
+      when is_binary(resource) and is_binary(action) do
+    from(user_role in UserRole,
+      join: role_permission in RolePermission,
+      on: role_permission.role_id == user_role.role_id,
+      join: permission in Permission,
+      on: permission.id == role_permission.permission_id,
+      where:
+        user_role.user_id == ^user.id and permission.resource == ^resource and
+          permission.action == ^action
+    )
+    |> Repo.exists?()
   end
 
   @email_verification_max_attempts 5

@@ -194,6 +194,10 @@ defmodule WaziRouteWeb.UserAuth do
       on user_token.
       Redirects to login page if there's no logged user.
 
+    * `:require_admin` - Authenticates the user, then permits only users with
+      the road-condition-evidence review permission. Users without that
+      permission are redirected to their workspace.
+
   ## Examples
 
   Use the `on_mount` lifecycle macro in LiveViews to mount or authenticate
@@ -231,6 +235,35 @@ defmodule WaziRouteWeb.UserAuth do
     end
   end
 
+  def on_mount(:require_admin, _params, session, socket) do
+    socket = mount_current_scope(socket, session)
+
+    cond do
+      is_nil(socket.assigns.current_scope) || is_nil(socket.assigns.current_scope.user) ->
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(:error, "You must log in to access this page.")
+          |> Phoenix.LiveView.redirect(to: ~p"/users/log-in")
+
+        {:halt, socket}
+
+      Accounts.has_permission?(
+        socket.assigns.current_scope.user,
+        "road_condition_evidence",
+        "review"
+      ) ->
+        {:cont, socket}
+
+      true ->
+        socket =
+          socket
+          |> Phoenix.LiveView.put_flash(:error, "You are not allowed to access that page.")
+          |> Phoenix.LiveView.redirect(to: ~p"/dashboard")
+
+        {:halt, socket}
+    end
+  end
+
   defp mount_current_scope(socket, session) do
     Phoenix.Component.assign_new(socket, :current_scope, fn ->
       {user, _} =
@@ -257,6 +290,24 @@ defmodule WaziRouteWeb.UserAuth do
       |> maybe_store_return_to()
       |> redirect(to: ~p"/users/log-in")
       |> halt()
+    end
+  end
+
+  @doc "Plug for routes that require the road-condition-evidence review permission."
+  def require_admin_user(conn, _opts) do
+    case conn.assigns.current_scope do
+      %Scope{user: user} when not is_nil(user) ->
+        if Accounts.has_permission?(user, "road_condition_evidence", "review") do
+          conn
+        else
+          conn
+          |> put_flash(:error, "You are not allowed to access that page.")
+          |> redirect(to: ~p"/dashboard")
+          |> halt()
+        end
+
+      _ ->
+        require_authenticated_user(conn, [])
     end
   end
 
