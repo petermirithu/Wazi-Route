@@ -13,6 +13,8 @@ defmodule WaziRoute.Roads.ConditionEvidence do
     field :condition, :string
     field :source_type, :string
     field :source_reference, :string
+    field :source_details, :map
+    field :import_key, :string
     field :observed_at, :utc_datetime
     field :retrieved_at, :utc_datetime
     field :valid_until, :utc_datetime
@@ -30,6 +32,8 @@ defmodule WaziRoute.Roads.ConditionEvidence do
       :condition,
       :source_type,
       :source_reference,
+      :source_details,
+      :import_key,
       :observed_at,
       :retrieved_at,
       :valid_until,
@@ -52,10 +56,12 @@ defmodule WaziRoute.Roads.ConditionEvidence do
     ])
     |> validate_length(:road_name, max: 160)
     |> validate_length(:source_reference, max: 500)
+    |> validate_length(:import_key, max: 160)
     |> validate_inclusion(:condition, @conditions)
     |> validate_inclusion(:source_type, @source_types)
     |> validate_inclusion(:verification_status, @verification_statuses)
     |> validate_number(:confidence, greater_than_or_equal_to: 0, less_than_or_equal_to: 1)
+    |> unique_constraint(:import_key)
   end
 
   def road_key(road_name) when is_binary(road_name) do

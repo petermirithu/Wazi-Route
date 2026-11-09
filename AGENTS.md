@@ -17,6 +17,7 @@ This is a web application written using the Phoenix web framework.
 - **Always** use the imported `<.input>` component for form inputs from `core_components.ex` when available. `<.input>` is imported and using it will save steps and prevent errors
 - If you override the default input classes (`<.input class="myclass px-2 py-1 rounded-lg">)`) class with your own values, no default classes are inherited, so your
 custom classes must fully style the input
+- Use daisyUI skill.
 
 ### JS and CSS guidelines
 

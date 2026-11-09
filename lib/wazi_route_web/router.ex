@@ -62,6 +62,15 @@ defmodule WaziRouteWeb.Router do
     post "/users/update-password", UserSessionController, :update_password
   end
 
+  scope "/admin", WaziRouteWeb.Admin do
+    pipe_through [:browser, :require_authenticated_user, :require_admin_user]
+
+    live_session :require_admin_user,
+      on_mount: [{WaziRouteWeb.UserAuth, :require_admin}] do
+      live "/evidence", EvidenceLive, :index
+    end
+  end
+
   scope "/", WaziRouteWeb do
     pipe_through [:browser]
 

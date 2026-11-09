@@ -5,6 +5,8 @@ defmodule WaziRouteWeb.Layouts do
   """
   use WaziRouteWeb, :html
 
+  alias WaziRoute.Accounts
+
   # Embed all files in layouts/* within this module.
   # The default root.html.heex file contains the HTML
   # skeleton of your application, namely HTML headers
@@ -152,6 +154,20 @@ defmodule WaziRouteWeb.Layouts do
                     >
                       <.icon name="hero-adjustments-horizontal" class="size-5 text-secondary" />
                       Driving preferences
+                    </.link>
+                    <.link
+                      :if={
+                        Accounts.has_permission?(
+                          @current_scope.user,
+                          "road_condition_evidence",
+                          "review"
+                        )
+                      }
+                      id="admin-evidence-link"
+                      navigate={~p"/admin/evidence"}
+                      class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-primary transition hover:bg-base-200"
+                    >
+                      <.icon name="hero-shield-check" class="size-5 text-secondary" /> Evidence review
                     </.link>
                     <.link
                       href={~p"/users/log-out"}
