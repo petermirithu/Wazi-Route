@@ -17,6 +17,7 @@ defmodule WaziRouteWeb.DashboardLive do
        route_options: [],
        selected_route_id: nil,
        selected_route: nil,
+       showing_why_route_id: nil,
        sheet_collapsed: false
      )
      |> stream(:routes, [])
@@ -66,6 +67,13 @@ defmodule WaziRouteWeb.DashboardLive do
     {:noreply, assign(socket, :form, planner_form(params))}
   end
 
+  def handle_event("toggle-why-route", %{"route-id" => route_id}, socket) do
+    new_showing_id =
+      if socket.assigns.showing_why_route_id == route_id, do: nil, else: route_id
+
+    {:noreply, assign(socket, :showing_why_route_id, new_showing_id)}
+  end
+
   def handle_event("toggle-sheet", _params, socket) do
     {:noreply, assign(socket, :sheet_collapsed, !socket.assigns.sheet_collapsed)}
   end
@@ -86,6 +94,7 @@ defmodule WaziRouteWeb.DashboardLive do
        route_options: [],
        selected_route_id: nil,
        selected_route: nil,
+       showing_why_route_id: nil,
        sheet_collapsed: false
      )
      |> stream(:routes, [], reset: true)
@@ -223,4 +232,14 @@ defmodule WaziRouteWeb.DashboardLive do
 
   defp traffic_status_label(_traffic),
     do: "Live traffic is unavailable; it is not used in this score"
+
+  defp sentiment_badge_class(:positive), do: "bg-emerald-50 text-emerald-800 border-emerald-200"
+  defp sentiment_badge_class(:negative), do: "bg-rose-50 text-rose-800 border-rose-200"
+  defp sentiment_badge_class(:warning), do: "bg-amber-50 text-amber-900 border-amber-200"
+  defp sentiment_badge_class(_sentiment), do: "bg-base-200 text-base-content/75 border-base-300"
+
+  defp sentiment_icon(:positive), do: "hero-check-circle"
+  defp sentiment_icon(:negative), do: "hero-exclamation-triangle"
+  defp sentiment_icon(:warning), do: "hero-exclamation-circle"
+  defp sentiment_icon(_sentiment), do: "hero-information-circle"
 end

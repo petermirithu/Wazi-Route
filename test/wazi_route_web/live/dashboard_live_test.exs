@@ -69,6 +69,16 @@ defmodule WaziRouteWeb.DashboardLiveTest do
     assert has_element?(view, "#route-evidence-summary", "Road condition is unknown")
     assert has_element?(view, "#route-elevation-summary", "Directional elevation estimate")
     assert has_element?(view, "#route-traffic-summary", "Fresh live traffic applied")
+    assert has_element?(view, "#selected-route-recommended-badge", "Recommended")
+    assert has_element?(view, "#selected-route-summary")
+    assert has_element?(view, "#toggle-why-selected-route", "Why this route was suggested")
+
+    # Toggle why details on mobile view
+    refute has_element?(view, "#why-details-route-1")
+    view |> element("#toggle-why-selected-route") |> render_click()
+    assert has_element?(view, "#why-details-route-1")
+    assert has_element?(view, "#why-details-route-1", "Cited Evidence")
+
     assert has_element?(view, "#planner-results")
     assert has_element?(view, "#planner-panel[data-state='ready']")
     refute has_element?(view, "#journey-form")
@@ -78,12 +88,14 @@ defmodule WaziRouteWeb.DashboardLiveTest do
     assert has_element?(view, "#routes-route-3")
     refute has_element?(view, "#routes-route-4")
     assert view |> element("#routes-route-1") |> render() =~ ~s(aria-pressed="true")
+    assert has_element?(view, "#candidate-why-route-1", "Why this route was suggested")
 
     view
     |> element("#routes-route-2")
     |> render_click()
 
     assert view |> element("#routes-route-2") |> render() =~ ~s(aria-pressed="true")
+    assert has_element?(view, "#candidate-why-route-2", "Why this route was suggested")
     assert_push_event(view, "route-selected", %{id: "route-2"})
     assert has_element?(view, "#tab-route_tabs-route-2[aria-selected='true']")
     assert has_element?(view, "#tab-route_tabs-route-1[aria-selected='false']")

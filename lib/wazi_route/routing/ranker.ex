@@ -3,7 +3,7 @@ defmodule WaziRoute.Routing.Ranker do
 
   alias WaziRoute.Accounts.Scope
   alias WaziRoute.Roads
-  alias WaziRoute.Routing.{RouteEvidence, Scorer}
+  alias WaziRoute.Routing.{Explanation, RouteEvidence, Scorer}
   alias WaziRoute.Vehicles
 
   def rank(%Scope{} = scope, routes) do
@@ -29,6 +29,7 @@ defmodule WaziRoute.Routing.Ranker do
     |> Enum.reject(& &1.evidence.verified_obstruction?)
     |> Enum.filter(&(&1.duration_s <= maximum_duration_s))
     |> Enum.sort_by(&{&1.score, &1.duration_s})
+    |> Explanation.annotate_routes(preferences, vehicle_profile)
   end
 
   defp roads_to_evidence(routes) do
