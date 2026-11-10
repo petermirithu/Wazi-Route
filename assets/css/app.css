@@ -9,6 +9,7 @@
 @source "../js";
 @source "../../lib/wazi_route_web";
 @source "../../priv/static/offline.html";
+@source "../../priv/static/waking.html";
 /* Required for Tailwind to automatically pick up changes in colocated CSS files in dev */
 @source "../../_build/dev/phoenix-colocated/wazi_route/*/";
 
@@ -111,6 +112,136 @@
 
 .wazi-endpoint-marker__core--destination {
   background: #bb5739;
+}
+
+.wazi-wake-road {
+  position: relative;
+  min-height: 13rem;
+  overflow: hidden;
+}
+
+.wazi-wake-lane {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.6rem;
+  padding-top: 1.25rem;
+  background: linear-gradient(140deg, rgb(30 41 34 / 0.18), rgb(255 250 240 / 0.04));
+  transform: perspective(12rem) rotateX(51deg);
+  transform-origin: bottom;
+}
+
+.wazi-wake-lane span {
+  width: 0.38rem;
+  height: 1.65rem;
+  border-radius: 9999px;
+  background: #e9ad45;
+  box-shadow: 0 0 1.25rem rgb(233 173 69 / 0.38);
+  animation: wazi-road-markers 1.7s linear infinite;
+}
+
+.wazi-wake-lane span:nth-child(2) { animation-delay: -0.57s; }
+.wazi-wake-lane span:nth-child(3) { animation-delay: -1.14s; }
+
+.wazi-wake-car {
+  position: absolute;
+  z-index: 2;
+  bottom: 2.15rem;
+  left: calc(50% - 2.5rem);
+  width: 5rem;
+  height: 2.25rem;
+  border: 0.28rem solid #fffaf0;
+  border-radius: 1.3rem 1.3rem 0.72rem 0.72rem;
+  background: #a94f2d;
+  box-shadow: 0 0.7rem 1.6rem rgb(0 0 0 / 0.28);
+  animation: wazi-car-idle 1.1s ease-in-out infinite alternate;
+}
+
+.wazi-wake-window {
+  position: absolute;
+  top: -1.12rem;
+  left: 1rem;
+  width: 2.42rem;
+  height: 1.08rem;
+  border: 0.22rem solid #fffaf0;
+  border-bottom: 0;
+  border-radius: 0.9rem 0.9rem 0 0;
+  background: #4e7d83;
+}
+
+.wazi-wake-wheel {
+  position: absolute;
+  bottom: -0.52rem;
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 0.2rem solid #fffaf0;
+  border-radius: 9999px;
+  background: #24352a;
+}
+
+.wazi-wake-wheel-left { left: 0.38rem; }
+.wazi-wake-wheel-right { right: 0.38rem; }
+
+.wazi-wake-hills {
+  position: absolute;
+  right: -2rem;
+  bottom: -3.1rem;
+  left: -2rem;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 0.5rem;
+  opacity: 0.42;
+}
+
+.wazi-wake-hills i {
+  width: 8rem;
+  height: 7rem;
+  border: 1px solid rgb(255 250 240 / 0.4);
+  border-radius: 4rem 4rem 0 0;
+  background: rgb(85 115 78 / 0.5);
+}
+
+.wazi-wake-hills i:nth-child(2) { width: 10rem; height: 9rem; background: rgb(78 125 131 / 0.36); }
+.wazi-wake-hills i:nth-child(3) { width: 7rem; height: 5.5rem; background: rgb(169 79 45 / 0.38); }
+
+#wake-road[style*="--wake-nudges"] .wazi-wake-car {
+  animation: wazi-car-nudge 280ms ease-out;
+}
+
+#wake-screen[data-ready="true"] .wazi-wake-car {
+  animation: wazi-car-ready 420ms ease-in forwards;
+}
+
+@keyframes wazi-road-markers {
+  from { transform: translateY(-0.65rem) scale(0.72); opacity: 0; }
+  25% { opacity: 1; }
+  to { transform: translateY(6rem) scale(1.3); opacity: 0; }
+}
+
+@keyframes wazi-car-idle {
+  from { transform: translateY(0) rotate(-1deg); }
+  to { transform: translateY(-0.2rem) rotate(1deg); }
+}
+
+@keyframes wazi-car-nudge {
+  0% { transform: translateX(0); }
+  45% { transform: translateX(1rem) rotate(2deg); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes wazi-car-ready {
+  to { transform: translateX(18rem) rotate(4deg); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wazi-wake-lane span,
+  .wazi-wake-car,
+  #wake-screen[data-ready="true"] .wazi-wake-car {
+    animation: none;
+  }
 }
 
 @layer utilities {

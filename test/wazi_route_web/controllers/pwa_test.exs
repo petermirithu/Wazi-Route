@@ -31,6 +31,13 @@ defmodule WaziRouteWeb.PWATest do
     assert Enum.any?(get_resp_header(conn, "content-type"), &String.contains?(&1, "javascript"))
   end
 
+  test "serves a dependency-free health endpoint for the wake screen", %{conn: conn} do
+    conn = get(conn, ~p"/healthz", %{_format: "json"})
+
+    assert %{"status" => "ready"} = conn |> json_response(200)
+    assert get_resp_header(conn, "cache-control") == ["no-store"]
+  end
+
   test "provides Apple install metadata and manual installation help", %{conn: conn} do
     page = conn |> get(~p"/discover") |> html_response(200) |> LazyHTML.from_document()
 
@@ -62,5 +69,16 @@ defmodule WaziRouteWeb.PWATest do
     assert page |> LazyHTML.query("meta[name='csrf-token'], script") |> Enum.count() == 0
     assert get_resp_header(conn, "set-cookie") == []
     assert get_resp_header(conn, "cache-control") == ["no-cache"]
+  end
+
+  test "waking fallback is static, anonymous, and includes the mobile wake experience", %{conn: conn} do
+    conn = get(conn, ~p"/waking.html")
+    page = conn |> html_response(200) |> LazyHTML.from_document()
+
+    assert page |> LazyHTML.query("#wake-screen") |> Enum.count() == 1
+    assert page |> LazyHTML.query("#wake-nudge") |> LazyHTML.text() =~ "nudge"
+    assert page |> LazyHTML.query("script[src='/assets/js/app.js']") |> Enum.count() == 1
+    assert page |> LazyHTML.query("meta[name='csrf-token']") |> Enum.count() == 0
+    assert get_resp_header(conn, "set-cookie") == []
   end
 end

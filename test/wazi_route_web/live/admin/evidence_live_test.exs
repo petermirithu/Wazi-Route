@@ -1,11 +1,22 @@
 defmodule WaziRouteWeb.Admin.EvidenceLiveTest do
-  use WaziRouteWeb.ConnCase, async: true
+  use WaziRouteWeb.ConnCase, async: false
 
   import Phoenix.LiveViewTest
   import WaziRoute.AccountsFixtures
 
   alias WaziRoute.Accounts.Scope
   alias WaziRoute.Roads
+  alias WaziRoute.Roads.OsmCollector
+
+  setup do
+    previous = Application.get_env(:wazi_route, OsmCollector)
+
+    Application.put_env(:wazi_route, OsmCollector,
+      req_options: [plug: {Req.Test, __MODULE__}]
+    )
+
+    on_exit(fn -> restore_config(previous) end)
+  end
 
   test "an administrator can approve imported evidence", %{conn: conn} do
     admin = admin_fixture()
@@ -34,6 +45,39 @@ defmodule WaziRouteWeb.Admin.EvidenceLiveTest do
              conn |> log_in_user(user_fixture()) |> live(~p"/admin/evidence")
   end
 
+  test "an administrator can collect an OSM source record in the review workspace", %{conn: conn} do
+    Req.Test.stub(__MODULE__, fn conn ->
+      Req.Test.json(conn, %{
+        "elements" => [
+          %{
+            "type" => "way",
+            "id" => 703_287_964,
+            "version" => 9,
+            "timestamp" => "2026-05-22T06:33:19Z",
+            "tags" => %{
+              "name" => "Red Hill Road",
+              "smoothness" => "good",
+              "surface" => "asphalt"
+            }
+          }
+        ]
+      })
+    end)
+
+    {:ok, view, _html} = conn |> log_in_user(admin_fixture()) |> live(~p"/admin/evidence")
+
+    assert has_element?(view, "#osm-collection-form")
+
+    view
+    |> form("#osm-collection-form", %{
+      "osm_collection" => %{"source_url" => "https://www.openstreetmap.org/way/703287964"}
+    })
+    |> render_submit()
+
+    assert has_element?(view, "#evidence-list", "Red Hill Road")
+    assert has_element?(view, "button[id^='approve-evidence-']")
+  end
+
   test "an unauthenticated visitor is redirected to log in", %{conn: conn} do
     assert {:error, {:redirect, %{to: "/users/log-in"}}} = live(conn, ~p"/admin/evidence")
   end
@@ -59,4 +103,7 @@ defmodule WaziRouteWeb.Admin.EvidenceLiveTest do
 
     evidence
   end
+
+  defp restore_config(nil), do: Application.delete_env(:wazi_route, OsmCollector)
+  defp restore_config(config), do: Application.put_env(:wazi_route, OsmCollector, config)
 end

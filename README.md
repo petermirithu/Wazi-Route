@@ -121,38 +121,44 @@ The importer accepts only condition claims directly supported by OSM tags:
 
 `surface=asphalt` alone is not evidence that a road is smooth, so it is rejected.
 
-### Import and approve evidence
+### Collect and approve evidence in the admin workspace
 
-Import the file into the database:
+Every OSM record starts as **unverified** and cannot influence a route. An
+application operator grants the first administrator the seeded `admin` role.
+After that one-time account setup, all routine collection and approval happens
+in the application—no Mix commands are needed by an administrator.
 
-```bash
-mix wazi_route.import_osm_conditions priv/road_condition_imports/nairobi_northwest_osm.json
-```
+Sign in as that administrator and open `/admin/evidence`, or choose **Evidence
+review** from the signed-in account menu. On the page:
 
-Every OSM import begins as **unverified**, and cannot influence a route. Bootstrap
-the first administrator once, using an existing account email:
-
-```bash
-mix wazi_route.grant_admin you@example.com
-```
+1. Paste an OpenStreetMap **way** URL into **Queue an OpenStreetMap road
+   record**. The application fetches the source, preserves its tags, and
+   infers a condition only from supported OSM tags.
+2. Inspect the road, source tags, observation time, and confidence in the
+   queued evidence card.
+3. Use **Approve** or **Reject**. Only approved evidence is considered during
+   routing.
 
 Authorization is normalized across `roles`, `permissions`, `role_permissions`,
 and `user_roles`; it does not use a role column on `users`. New accounts receive
 the `user` role. The seeded `admin` role has the evidence `read` and `review`
-permissions. To assign any seeded role to an existing user, use:
-
-```bash
-mix wazi_route.assign_role you@example.com admin
-```
-
-Sign in as that administrator and open `/admin/evidence`. Compare the source with
-the real corridor, then approve or reject the record there. Only approved evidence
-is considered during routing.
+permissions. The page is unavailable to ordinary accounts, even if they know
+its URL.
 
 For now, OSM evidence is retained after it is stored and can remain approved. A
-separate revalidation and expiry workflow is deliberately deferred; see
-[future work](docs/future-work.md).
+separate revalidation and expiry workflow is deliberately deferred; see the
+[policy and rollout gates](docs/future-work.md). Automatic expiry must remain
+disabled until those gates are met.
 
 ## Deploy on Render
 
 Follow the [Render deployment guide](deployment.md) to create the web service and PostgreSQL database, configure its required secrets, run migrations before deploys, and verify the live application.
+
+### Installed PWA wake screen
+
+On a returning installed-PWA launch, the service worker gives Render 1.1 seconds
+to return the requested page. If a sleeping instance is still waking, it serves
+an anonymous cached wake screen instead of leaving a blank page. That screen
+polls the same-origin `/healthz` endpoint and reloads the original destination
+once Phoenix responds. It includes a motion-aware road animation and an optional
+"Give the car a nudge" interaction; no user session HTML is cached.

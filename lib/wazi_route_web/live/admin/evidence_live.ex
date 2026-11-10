@@ -2,6 +2,7 @@ defmodule WaziRouteWeb.Admin.EvidenceLive do
   use WaziRouteWeb, :live_view
 
   alias WaziRoute.Roads
+  alias WaziRoute.Roads.OsmCollector
 
   @impl true
   def mount(_params, _session, socket) do
@@ -10,7 +11,34 @@ defmodule WaziRouteWeb.Admin.EvidenceLive do
     {:ok,
      socket
      |> assign(:evidence_count, length(evidence))
+     |> assign(:collect_form, collect_form())
      |> stream(:evidence, evidence, dom_id: &"evidence-#{&1.id}")}
+  end
+
+  @impl true
+  def handle_event("collect-osm", %{"osm_collection" => params}, socket) do
+    source_url = String.trim(params["source_url"] || "")
+
+    case OsmCollector.collect(source_url) do
+      {:ok, evidence} ->
+        evidence_count =
+          socket.assigns.current_scope
+          |> Roads.list_condition_evidence_for_review()
+          |> length()
+
+        {:noreply,
+         socket
+         |> assign(:collect_form, collect_form())
+         |> assign(:evidence_count, evidence_count)
+         |> stream_insert(:evidence, evidence, at: 0)
+         |> put_flash(:info, "OSM record collected. Review it below before it can affect routing.")}
+
+      {:error, reason} ->
+        {:noreply,
+         socket
+         |> assign(:collect_form, collect_form(%{"source_url" => source_url}))
+         |> put_flash(:error, collection_error(reason))}
+    end
   end
 
   @impl true
@@ -53,4 +81,19 @@ defmodule WaziRouteWeb.Admin.EvidenceLive do
   end
 
   defp source_tags(_evidence), do: "No imported OSM tags"
+
+  defp collect_form(params \\ %{"source_url" => ""}), do: to_form(params, as: :osm_collection)
+
+  defp collection_error(:invalid_source_url),
+    do: "Paste an OpenStreetMap way URL, for example https://www.openstreetmap.org/way/703287964."
+
+  defp collection_error(:way_not_found), do: "OpenStreetMap could not find that way."
+  defp collection_error(:missing_road_name), do: "That way has no road name and cannot be queued."
+
+  defp collection_error(:unsupported_osm_condition_tags),
+    do: "That way has no supported smoothness or unpaved-surface tag to support a condition claim."
+
+  defp collection_error({:osm_error, _status}), do: "OpenStreetMap could not provide that record right now."
+  defp collection_error({:request_failed, _reason}), do: "OpenStreetMap could not be reached. Please try again."
+  defp collection_error(_reason), do: "That OSM record could not be collected. Please check the source and try again."
 end

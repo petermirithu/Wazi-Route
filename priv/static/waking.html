@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="wazi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#273f30" />
+    <meta name="description" content="Wazi Route is waking up. Your route planner will be ready shortly." />
+    <title>Waking up Wazi Route</title>
+    <link rel="stylesheet" href="/assets/css/app.css" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/logos/apple-touch-icon.png" />
+    <script defer src="/assets/js/app.js"></script>
+  </head>
+  <body class="min-h-dvh overflow-x-hidden bg-base-100 font-sans text-base-content antialiased">
+    <main id="wake-screen" class="wazi-wake-screen relative isolate grid min-h-dvh place-items-center overflow-hidden px-5 py-8" aria-labelledby="wake-title" aria-live="polite">
+      <div class="wazi-pattern absolute inset-0 -z-20"></div>
+      <div class="absolute inset-0 -z-10 bg-linear-to-b from-primary/15 via-primary/35 to-primary"></div>
+
+      <section class="w-full max-w-md text-center text-primary-content">
+        <div class="mx-auto flex size-19 items-center justify-center rounded-[1.65rem] border border-primary-content/25 bg-base-100/10 shadow-2xl backdrop-blur-sm">
+          <img src="/images/wazi-mark.png" alt="Wazi Route" width="166" height="172" class="size-12 object-contain" />
+        </div>
+        <p class="mt-7 text-xs font-bold uppercase tracking-[0.2em] text-accent">Server is waking up</p>
+        <h1 id="wake-title" class="mt-3 text-4xl leading-tight font-bold tracking-tight sm:text-5xl">Your road crew is on it.</h1>
+        <p id="wake-status" class="mx-auto mt-4 max-w-sm text-sm leading-6 text-primary-content/75">Checking the road ahead…</p>
+
+        <div id="wake-road" class="wazi-wake-road mt-9 rounded-[2rem] border border-primary-content/15 bg-neutral/35 px-6 py-7 shadow-2xl" aria-hidden="true">
+          <div class="wazi-wake-lane"><span></span><span></span><span></span></div>
+          <div class="wazi-wake-car">
+            <span class="wazi-wake-window"></span><span class="wazi-wake-wheel wazi-wake-wheel-left"></span><span class="wazi-wake-wheel wazi-wake-wheel-right"></span>
+          </div>
+          <div class="wazi-wake-hills"><i></i><i></i><i></i></div>
+        </div>
+
+        <p id="wake-attempt" class="mt-5 text-xs font-semibold tracking-wide text-primary-content/55">Connection check 0</p>
+        <button id="wake-nudge" type="button" class="mt-5 inline-flex min-h-11 items-center gap-2 rounded-xl border border-primary-content/25 bg-base-100/10 px-4 text-sm font-bold text-primary-content transition hover:-translate-y-0.5 hover:bg-base-100/20 focus-visible:outline-accent motion-reduce:transform-none">
+          <span aria-hidden="true">✦</span> Give the car a nudge
+        </button>
+        <p class="mx-auto mt-5 max-w-xs text-xs leading-5 text-primary-content/55">This can take a moment after the service has been asleep. You can keep this screen open.</p>
+      </section>
+    </main>
+  </body>
+</html>

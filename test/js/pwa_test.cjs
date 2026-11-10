@@ -5,7 +5,7 @@ const {resolve} = require('node:path')
 const vm = require('node:vm')
 const root = resolve(__dirname, '../..')
 
-function worker({offline = false, initial = {}} = {}) {
+function worker({offline = false, slow = false, initial = {}} = {}) {
   const listeners = {}
   const stores = new Map(Object.entries(initial))
   let claimed = false
@@ -25,8 +25,10 @@ function worker({offline = false, initial = {}} = {}) {
     URL, Response, caches,
     fetch: async () => {
       if (offline) throw new TypeError('Offline')
+      if (slow) return await new Promise(() => {})
       return new Response('fresh network response')
     },
+    setTimeout: slow ? callback => { queueMicrotask(callback); return 0 } : () => 0,
     self: {
       location: {origin: 'https://wazi.example'},
       clients: {claim: async () => { claimed = true }},
@@ -52,11 +54,13 @@ function worker({offline = false, initial = {}} = {}) {
   }
 }
 
-test('precache contains only real public files, never session pages or source bundles', async () => {
+test('precache contains only anonymous public files, never session pages or split source bundles', async () => {
   const sw = worker()
   await sw.lifecycle('install')
   const cached = [...sw.stores.values()][0]
   assert(cached.has('/offline.html'))
+  assert(cached.has('/waking.html'))
+  assert(cached.has('/assets/js/app.js'))
   assert(!cached.has('/'))
   assert(!cached.has('/assets/js/landing.js'))
   assert(!cached.has('/assets/css/fonts.css'))
@@ -85,6 +89,12 @@ test('online navigations and assets always use the network without caching respo
   assert.equal(await (await sw.request('/')).text(), 'fresh network response')
   assert.equal(await (await sw.request('/assets/css/app.css', {mode: 'cors'})).text(), 'fresh network response')
   assert(![...sw.stores.values()][0].has('/'))
+})
+
+test('a slow server receives the cached wake screen instead of a blank installed app', async () => {
+  const sw = worker({slow: true})
+  await sw.lifecycle('install')
+  assert.equal(await (await sw.request('/dashboard')).text(), 'cached:/waking.html')
 })
 
 test('API, LiveView, mutation, and foreign requests are not intercepted', async () => {

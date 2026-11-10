@@ -18,6 +18,12 @@ defmodule WaziRouteWeb.Router do
   end
 
   scope "/", WaziRouteWeb do
+    pipe_through :api
+
+    get "/healthz", HealthController, :show
+  end
+
+  scope "/", WaziRouteWeb do
     pipe_through :browser
 
     get "/", PageController, :index

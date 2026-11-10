@@ -59,6 +59,20 @@
               >
                 <.icon name="hero-user-circle" class="size-5 text-secondary" /> Profile
               </.link>
+              <.link
+                :if={
+                  WaziRoute.Accounts.has_permission?(
+                    @current_scope.user,
+                    "road_condition_evidence",
+                    "review"
+                  )
+                }
+                id="dashboard-admin-evidence-link"
+                navigate={~p"/admin/evidence"}
+                class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-primary transition hover:bg-base-200"
+              >
+                <.icon name="hero-shield-check" class="size-5 text-secondary" /> Evidence review
+              </.link>
               <a
                 href={~p"/discover"}
                 class="flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-primary transition hover:bg-base-200"

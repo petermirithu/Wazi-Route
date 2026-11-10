@@ -115,6 +115,12 @@ defmodule WaziRouteWeb.DashboardLiveTest do
     refute has_element?(view, "#planner-results")
   end
 
+  test "shows evidence review in the workspace menu for an administrator", %{conn: conn} do
+    {:ok, view, _html} = conn |> log_in_user(admin_fixture()) |> live(~p"/dashboard")
+
+    assert has_element?(view, "#dashboard-admin-evidence-link", "Evidence review")
+  end
+
   test "the mobile sheet can collapse and reopen without losing the form", %{conn: conn} do
     {:ok, view, _} = conn |> log_in_user(user_fixture()) |> live(~p"/dashboard")
 
