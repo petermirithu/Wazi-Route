@@ -34,17 +34,6 @@
             >Register an account</.link>.
           <% end %>
         </p>
-        <div
-          :if={local_mail_adapter?()}
-          class="mt-6 flex gap-3 rounded-xl bg-info/10 p-4 text-sm text-info"
-        >
-          <.icon name="hero-information-circle" class="size-5 shrink-0" /><p>
-            Local email is enabled. View sent messages in <.link
-              href="/dev/mailbox"
-              class="font-bold underline"
-            >the mailbox</.link>.
-          </p>
-        </div>
         <.form
           for={@form}
           id="login_form_password"

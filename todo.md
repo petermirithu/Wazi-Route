@@ -11,11 +11,8 @@
 9. Reviewable, idempotent OSM road-condition imports with preserved source tags and manual approve/reject workflow.
 10. Normalized RBAC (`roles`, `permissions`, `role_permissions`, and `user_roles`) with an admin evidence-review workspace for approving or rejecting imported road-condition evidence.
 11. Refreshed, validated Nairobi northwest corridor road-condition evidence (Red Hill Road, Red Hill Link Road, Limuru Road, Lower Kabete Road, Waiyaki Way, James Gichuru Road, Loresho Ridge, Kaptagat Road) imported and approved for pilot candidate ranking.
+12. Deterministic route explanations citing exact evidence (`WaziRoute.Routing.Explanation`), road conditions, elevation, and live traffic penalties, with an interactive "Why this route was suggested" breakdown in the dashboard.
+13. Design an evidence revalidation and expiry policy before enabling automatic expiry.
 
 ## Next: evidence collection and explanation
-
-1. Add route explanations that cite the exact evidence used in each recommendation.
-2. Make sure road suggestion is based on route preferences, road conditions etc for best road. with option to view why the suggetsion.
-3. Design an evidence revalidation and expiry policy before enabling automatic expiry.
-
-Avoid implementing AI or community reports until candidate routes and provider coverage are proven.
+1. 

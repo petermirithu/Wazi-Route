@@ -71,6 +71,19 @@
   --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
 .wazi-route-map .leaflet-bottom {
   bottom: var(--planner-overlay-height, 0px);
 }

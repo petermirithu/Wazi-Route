@@ -54,13 +54,13 @@ defmodule WaziRouteWeb.Layouts do
       >
         <nav
           aria-label="Main navigation"
-          class="mx-auto flex min-h-20 max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-12"
+          class="mx-auto flex min-h-20 max-w-[1440px] min-w-0 items-center justify-between gap-3 px-5 sm:gap-4 sm:px-8 lg:px-12"
         >
           <a
             id="nav-brand"
             href={if(@current_scope && @current_scope.user, do: ~p"/dashboard", else: ~p"/")}
             aria-label="Wazi Route home"
-            class="inline-flex shrink-0 items-center gap-2.5"
+            class="inline-flex min-w-0 shrink items-center gap-2.5"
           >
             <img
               src={~p"/images/wazi-mark.png"}
@@ -104,7 +104,7 @@ defmodule WaziRouteWeb.Layouts do
             <% end %>
           </div>
 
-          <div class="flex items-center gap-2 sm:gap-3">
+          <div class="flex shrink-0 items-center gap-2 sm:gap-3">
             <%= if @current_scope && @current_scope.user do %>
               <details id="profile-menu" class="group relative">
                 <summary class="flex min-h-12 cursor-pointer list-none items-center gap-3 rounded-full border border-base-300 bg-base-100 py-1.5 pr-2 pl-1.5 transition hover:border-secondary hover:shadow-md [&::-webkit-details-marker]:hidden">
@@ -120,12 +120,12 @@ defmodule WaziRouteWeb.Layouts do
                   />
                   <span class="sr-only">Open profile menu</span>
                 </summary>
-                <div class="absolute right-0 z-30 mt-3 w-64 overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-2xl">
+                <div class="absolute right-0 z-30 mt-3 w-64 max-w-[calc(100vw_-_2.5rem)] overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-2xl">
                   <div class="border-b border-base-300 bg-base-200 px-5 py-4">
                     <p class="truncate text-sm font-bold text-primary">
                       {@current_scope.user.first_name} {@current_scope.user.last_name}
                     </p>
-                    <p class="mt-1 truncate text-xs text-base-content/55">
+                      <p class="mt-1 break-all text-xs text-base-content/55">
                       {@current_scope.user.email}
                     </p>
                   </div>

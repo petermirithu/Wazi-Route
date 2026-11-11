@@ -63,11 +63,11 @@ defmodule WaziRouteWeb.CoreComponents do
       id={@id}
       phx-click={JS.push("lv:clear-flash", value: %{key: @kind}) |> hide("##{@id}")}
       role="alert"
-      class="toast toast-top toast-end z-50"
+      class="toast toast-top toast-end z-50 max-w-[calc(100vw_-_1rem)]"
       {@rest}
     >
       <div class={[
-        "alert w-80 sm:w-96 max-w-80 sm:max-w-96 text-wrap",
+        "alert w-[calc(100vw_-_2rem)] max-w-80 text-wrap sm:w-96 sm:max-w-96",
         @kind == :info && "alert-info",
         @kind == :error && "alert-error"
       ]}>
@@ -212,8 +212,8 @@ defmodule WaziRouteWeb.CoreComponents do
       end)
 
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
+    <div class="fieldset mb-2 min-w-0">
+      <label for={@id} class="block min-w-0">
         <input
           type="hidden"
           name={@name}
@@ -240,13 +240,13 @@ defmodule WaziRouteWeb.CoreComponents do
 
   def input(%{type: "select"} = assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
+    <div class="fieldset mb-2 min-w-0">
+      <label for={@id} class="block min-w-0">
         <span :if={@label} class="text-sm font-semibold text-base-content/80">{@label}</span>
         <select
           id={@id}
           name={@name}
-          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
+          class={[@class || "w-full max-w-full select", @errors != [] && (@error_class || "select-error")]}
           multiple={@multiple}
           {@rest}
         >
@@ -261,14 +261,14 @@ defmodule WaziRouteWeb.CoreComponents do
 
   def input(%{type: "textarea"} = assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
+    <div class="fieldset mb-2 min-w-0">
+      <label for={@id} class="block min-w-0">
         <span :if={@label} class="text-sm font-semibold text-base-content/80">{@label}</span>
         <textarea
           id={@id}
           name={@name}
           class={[
-            @class || "w-full textarea",
+            @class || "w-full max-w-full textarea",
             @errors != [] && (@error_class || "textarea-error")
           ]}
           {@rest}
@@ -282,8 +282,8 @@ defmodule WaziRouteWeb.CoreComponents do
   # All other inputs text, datetime-local, url, password, etc. are handled here...
   def input(assigns) do
     ~H"""
-    <div class="fieldset mb-2">
-      <label for={@id}>
+    <div class="fieldset mb-2 min-w-0">
+      <label for={@id} class="block min-w-0">
         <span :if={@label} class="text-sm font-semibold text-base-content/80">{@label}</span>
         <input
           type={@type}
@@ -292,7 +292,7 @@ defmodule WaziRouteWeb.CoreComponents do
           value={Phoenix.HTML.Form.normalize_value(@type, @value)}
           class={[
             @class ||
-              "mt-1.5 min-h-12 w-full rounded-xl border border-base-300 bg-base-100 px-4 text-sm text-base-content shadow-sm transition placeholder:text-base-content/35 hover:border-primary/40 focus:border-secondary focus:outline-none focus:ring-3 focus:ring-secondary/15",
+              "mt-1.5 min-h-12 w-full max-w-full rounded-xl border border-base-300 bg-base-100 px-4 text-sm text-base-content shadow-sm transition placeholder:text-base-content/35 hover:border-primary/40 focus:border-secondary focus:outline-none focus:ring-3 focus:ring-secondary/15",
             @errors != [] && (@error_class || "border-error focus:border-error focus:ring-error/15")
           ]}
           {@rest}
@@ -306,7 +306,7 @@ defmodule WaziRouteWeb.CoreComponents do
   # Helper used by inputs to generate form errors
   defp error(assigns) do
     ~H"""
-    <p class="mt-1.5 flex gap-2 items-center text-sm text-error">
+    <p class="mt-1.5 flex min-w-0 items-center gap-2 break-words text-sm text-error">
       <.icon name="hero-exclamation-circle" class="size-5" />
       {render_slot(@inner_block)}
     </p>

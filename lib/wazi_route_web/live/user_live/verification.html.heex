@@ -27,7 +27,7 @@
           Verify your email.
         </h1>
         <p class="mt-4 max-w-lg text-sm leading-7 text-base-content/65">
-          Enter the 6-digit code sent to <strong class="font-bold text-primary">{@user.email}</strong>. It expires in 10 minutes.
+          Enter the 6-digit code sent to <strong class="break-all font-bold text-primary">{@user.email}</strong>. It expires in 10 minutes.
         </p>
 
         <.form for={@form} id="verification-form" phx-submit="verify" class="mt-8">
@@ -41,7 +41,7 @@
             minlength="6"
             maxlength="6"
             placeholder="000000"
-            class="mt-2 min-h-16 w-full rounded-xl border border-base-300 bg-base-100 px-5 text-center font-mono text-3xl font-bold tracking-[0.35em] text-primary shadow-sm transition placeholder:text-base-content/20 focus:border-secondary focus:outline-none focus:ring-3 focus:ring-secondary/15"
+            class="mt-2 min-h-16 w-full max-w-full rounded-xl border border-base-300 bg-base-100 px-3 text-center font-mono text-2xl font-bold tracking-[0.22em] text-primary shadow-sm transition placeholder:text-base-content/20 focus:border-secondary focus:outline-none focus:ring-3 focus:ring-secondary/15 sm:px-5 sm:text-3xl sm:tracking-[0.35em]"
             required
             phx-mounted={JS.focus()}
           />
