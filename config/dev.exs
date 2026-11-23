@@ -29,6 +29,18 @@ config :wazi_route, WaziRouteWeb.Endpoint,
     tailwind: {Tailwind, :install_and_run, [:wazi_route, ~w(--watch)]}
   ]
 
+# Reload browser tabs when matching development files change.
+config :wazi_route, WaziRouteWeb.Endpoint,
+  live_reload: [
+    web_console_logger: true,
+    patterns: [
+      ~r"priv/static/(?!uploads/).*\.(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"priv/gettext/.*\.po$",
+      ~r"lib/wazi_route_web/router\.ex$",
+      ~r"lib/wazi_route_web/(controllers|live|components)/.*\.(ex|heex)$"
+    ]
+  ]
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed

@@ -20,8 +20,10 @@ injected `PORT` and uses the deployment hostname supplied in `VERCEL_URL`.
 2. Confirm **Framework Preset** is **Container**. The committed `vercel.json`
    sets this automatically.
 3. In **Project Settings → Environment Variables**, add the values from the
-   local `.env.production` file to the **Production** environment. Do not upload
-   or commit that file.
+   local `.env.production` file to the **Production** environment. For a Vercel
+   Preview deployment, add the required variables to the **Preview** environment
+   as well (preferably with a separate preview database). Do not upload or
+   commit that file.
 
    | Variable | Purpose |
    | --- | --- |
@@ -39,7 +41,9 @@ injected `PORT` and uses the deployment hostname supplied in `VERCEL_URL`.
    | `ECTO_IPV6` | Set to `true` only when the database needs IPv6 sockets |
 
    Vercel supplies `PORT` and `VERCEL_URL`; do not set them. Set `PHX_HOST` to
-   the custom domain, without `https://` or a path, after attaching that domain.
+   the custom domain, without `https://` or a path, in **Production only** after
+   attaching that domain. A Preview deployment should use its automatic
+   `VERCEL_URL` hostname.
 
 4. Deploy with `vercel --prod`, or push to the production branch of the linked
    repository. The Docker build never receives `.env.production` because it is
