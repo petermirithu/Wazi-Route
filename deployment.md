@@ -1,43 +1,66 @@
-# Deploy on Render
+# Deploy on Vercel with Docker
 
-This application is configured for a Render web service backed by Render PostgreSQL. The release listens on Render's `PORT` across all interfaces, uses the `RENDER_EXTERNAL_HOSTNAME` provided by Render for its public URL, and honors `PHX_HOST` when a custom domain is configured.
+This application is packaged as a production Phoenix release in the root
+`Dockerfile`. `vercel.json` selects Vercel's Container framework, which builds
+the image and routes traffic to the HTTP server. Phoenix listens on Vercel's
+injected `PORT` and uses the deployment hostname supplied in `VERCEL_URL`.
 
-## Create the services
+## Before deploying
 
-1. Push the repository to a Git provider that Render can access.
-2. In Render, create a PostgreSQL database in the same region as the application. Keep it private and use its internal connection string for the app's `DATABASE_URL`.
-3. Create a **Web Service** for this repository with these settings:
+1. Provision a hosted PostgreSQL database. Its data must be durable and
+   reachable from Vercel; filesystem data in a Vercel container is ephemeral.
+2. Ensure the database region is close to the Vercel function region.
+3. Run releases from a single trusted workflow. Do not run migrations when an
+   HTTP container starts, because Vercel may start multiple instances.
 
-   | Setting | Value |
+## Configure Vercel
+
+1. Import the Git repository into Vercel, or install the Vercel CLI and run
+   `vercel link` from the repository root.
+2. Confirm **Framework Preset** is **Container**. The committed `vercel.json`
+   sets this automatically.
+3. In **Project Settings → Environment Variables**, add the values from the
+   local `.env.production` file to the **Production** environment. Do not upload
+   or commit that file.
+
+   | Variable | Purpose |
    | --- | --- |
-   | Language | `Elixir` |
-   | Build Command | `./build.sh` |
-   | Start Command | `_build/prod/rel/wazi_route/bin/server` |
+   | `DATABASE_URL` | Hosted PostgreSQL connection URL |
+   | `SECRET_KEY_BASE` | Stable Phoenix cookie/session signing secret |
+   | `MAILGUN_BASE_URL` | Mailgun API base URL |
+   | `MAILGUN_DOMAIN` | Mailgun sending domain |
+   | `MAILGUN_API_KEY` | Mailgun API key |
+   | `MAILGUN_FROM_EMAIL` | Mail sender email address |
+   | `MAIL_FROM_NAME` | Optional sender display name |
+   | `GEOAPIFY_API_KEY` | Geoapify location-search API key |
+   | `OPENROUTESERVICE_API_KEY` | OpenRouteService routing API key |
+   | `TOMTOM_API_KEY` | TomTom traffic API key |
+   | `POOL_SIZE` | Optional Ecto pool size; defaults to `10` |
+   | `ECTO_IPV6` | Set to `true` only when the database needs IPv6 sockets |
 
-   The build script runs the release migration script after assembling the release. This supports Render's Free web services, which do not provide a pre-deploy command. It is safe to run repeatedly because Ecto tracks applied migrations. On a paid Render web service, you can instead move `_build/prod/rel/wazi_route/bin/migrate` into the pre-deploy command.
+   Vercel supplies `PORT` and `VERCEL_URL`; do not set them. Set `PHX_HOST` to
+   the custom domain, without `https://` or a path, after attaching that domain.
 
-## Configure environment variables
+4. Deploy with `vercel --prod`, or push to the production branch of the linked
+   repository. The Docker build never receives `.env.production` because it is
+   excluded by `.dockerignore`.
 
-Set these in the Render dashboard. Do not add their values to the repository.
+## Run database migrations
 
-| Variable | Value |
-| --- | --- |
-| `DATABASE_URL` | The internal PostgreSQL connection string from the Render database |
-| `SECRET_KEY_BASE` | A stable secret from `mix phx.gen.secret` |
-| `SMTP_RELAY` | Your SMTP host |
-| `SMTP_PORT` | Optional; defaults to `587` |
-| `SMTP_USERNAME` | SMTP account username |
-| `SMTP_PASSWORD` | SMTP account password |
-| `SMTP_FROM_EMAIL` | Sender email address |
-| `SMTP_FROM_NAME` | Optional; defaults to `Wazi Route` |
-| `GEOAPIFY_API_KEY` | Geoapify API key for location search |
-| `OPENROUTESERVICE_API_KEY` | OpenRouteService API key for routing |
-| `POOL_SIZE` | Optional; defaults to `10` |
+Migrations are intentionally separate from starting the web container. Run this
+once for each release before sending production traffic:
 
-Render automatically supplies `PORT` and `RENDER_EXTERNAL_HOSTNAME`; do not set them yourself. After adding a custom domain to the web service, set `PHX_HOST` to that domain without `https://` or a path.
+```bash
+docker build -t wazi-route .
+docker run --rm --env-file .env.production wazi-route /app/bin/migrate
+```
 
-Deploy the service. Render terminates TLS and Phoenix trusts Render's forwarded HTTPS protocol, so LiveView WebSocket connections and secure redirects work through the public URL.
+Use the same production `DATABASE_URL` that is configured in Vercel. Do not
+place production secrets in a Dockerfile, Git commit, or build argument.
 
 ## Verify a deployment
 
-After Render marks the deploy live, check the application home page, `/manifest.json`, and `/sw.js`. Confirm a signed-in user can load the dashboard and a route search completes, which verifies both the database and the two mapping API credentials.
+After Vercel marks the deployment ready, check the home page, `/manifest.json`,
+and `/sw.js`. Confirm that a signed-in user can open the dashboard and complete
+a route search. This validates the database, LiveView connection, and mapping
+credentials.

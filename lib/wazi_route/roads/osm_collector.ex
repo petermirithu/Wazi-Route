@@ -12,7 +12,9 @@ defmodule WaziRoute.Roads.OsmCollector do
   @smoothness_to_rough ~w(bad very_bad horrible very_horrible impassable)
   @unpaved_surfaces ~w(unpaved compacted fine_gravel gravel dirt earth ground sand)
 
-  def collect(source_url, now \\ DateTime.utc_now(:second)) when is_binary(source_url) do
+  def collect(source_url, now \\ DateTime.utc_now(:second))
+
+  def collect(source_url, now) when is_binary(source_url) do
     with {:ok, way_id} <- way_id_from_url(source_url),
          {:ok, %Req.Response{status: 200, body: body}} <- Req.get(client(), url: "/api/0.6/way/#{way_id}.json"),
          {:ok, attrs} <- attrs_from_response(body, way_id, now) do
@@ -67,7 +69,6 @@ defmodule WaziRoute.Roads.OsmCollector do
            }}
         else
           {:error, _reason} = error -> error
-          _ -> {:error, :invalid_osm_timestamp}
         end
 
       _ ->
