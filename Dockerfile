@@ -41,7 +41,10 @@ WORKDIR /app
 
 ENV MIX_ENV=prod \
     PHX_SERVER=true \
-    PHX_IP=0.0.0.0
+    PHX_IP=0.0.0.0 \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    ELIXIR_ERL_OPTIONS=+fnu
 
 COPY --from=build /app/_build/prod/rel/wazi_route ./
 

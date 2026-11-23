@@ -31,51 +31,6 @@ config :wazi_route, WaziRoute.Location.Routing.OpenRouteService,
 
 config :wazi_route, WaziRoute.Location.Traffic.TomTom, api_key: System.get_env("TOMTOM_API_KEY")
 
-if config_env() == :dev do
-  # Reload browser tabs when matching files change.
-  config :wazi_route, WaziRouteWeb.Endpoint,
-    live_reload: [
-      web_console_logger: true,
-      patterns: [
-        # Static assets, except user uploads
-        ~r"priv/static/(?!uploads/).*\.(js|css|png|jpeg|jpg|gif|svg)$"E,
-        # Gettext translations
-        ~r"priv/gettext/.*\.po$"E,
-        # Router, Controllers, LiveViews and LiveComponents
-        ~r"lib/wazi_route_web/router\.ex$"E,
-        ~r"lib/wazi_route_web/(controllers|live|components)/.*\.(ex|heex)$"E
-      ]
-    ]
-
-  config :swoosh, :api_client, true
-
-  case {
-    System.get_env("MAILGUN_BASE_URL"),
-    System.get_env("MAILGUN_DOMAIN"),
-    System.get_env("MAILGUN_API_KEY")
-  } do
-    {mailgun_base_url, mailgun_domain, mailgun_api_key}
-    when is_binary(mailgun_base_url) and is_binary(mailgun_domain) and is_binary(mailgun_api_key) ->
-      mail_from_email =
-        System.get_env("MAIL_FROM_EMAIL") ||
-          System.get_env("MAILGUN_FROM_EMAIL") ||
-          "postmaster@#{mailgun_domain}"
-
-      config :wazi_route,
-             :mailgun,
-             base_url: mailgun_base_url,
-             domain: mailgun_domain,
-             api_key: mailgun_api_key
-
-      config :wazi_route,
-             :mail_from,
-             {System.get_env("MAIL_FROM_NAME", "Wazi Route"), mail_from_email}
-
-    _ ->
-      :ok
-  end
-end
-
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
