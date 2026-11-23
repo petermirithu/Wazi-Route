@@ -1,0 +1,17 @@
+.git
+.DS_Store
+.elixir_ls
+_build
+deps
+cover
+doc
+tmp
+assets/node_modules
+.env
+.env.*
+!.env.production.example
+README.md
+AGENTS.md
+deployment.md
+implementation.md
+todo.md

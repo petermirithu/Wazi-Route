@@ -110,17 +110,17 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
-  # Render provides the public `onrender.com` hostname at runtime. `PHX_HOST`
-  # remains available for a custom domain, which should take precedence once it
-  # is configured in the Render dashboard.
+  # `PHX_HOST` is the canonical hostname for a custom domain. Vercel supplies
+  # `VERCEL_URL` for each deployment; Render's hostname remains supported for
+  # existing deployments.
   host =
     System.get_env("PHX_HOST") ||
+      System.get_env("VERCEL_URL") ||
       System.get_env("RENDER_EXTERNAL_HOSTNAME") ||
       "localhost"
 
-  # Render sends traffic directly to the port exposed by the service, so Phoenix
-  # must listen on all interfaces. A local reverse-proxy deployment can still
-  # supply PHX_IP=127.0.0.1 explicitly.
+  # Container hosts forward traffic to their injected PORT. Bind to all
+  # interfaces by default; a local reverse proxy can set PHX_IP=127.0.0.1.
   bind_address = System.get_env("PHX_IP", "0.0.0.0")
 
   bind_ip =
@@ -133,7 +133,7 @@ if config_env() == :prod do
 
   config :wazi_route, WaziRouteWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
-    http: [ip: bind_ip],
+    http: [ip: bind_ip, port: String.to_integer(System.get_env("PORT", "4020"))],
     secret_key_base: secret_key_base
 
   mailgun_base_url =

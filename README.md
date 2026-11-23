@@ -150,9 +150,11 @@ separate revalidation and expiry workflow is deliberately deferred; see the
 [policy and rollout gates](docs/future-work.md). Automatic expiry must remain
 disabled until those gates are met.
 
-## Deploy on Render
+## Deploy on Vercel
 
-Follow the [Render deployment guide](deployment.md) to create the web service and PostgreSQL database, configure its required secrets, run migrations before deploys, and verify the live application.
+Follow the [Vercel deployment guide](deployment.md) to deploy the Docker image,
+configure production environment variables, run migrations, and verify the live
+application.
 
 ### Installed PWA wake screen
 
